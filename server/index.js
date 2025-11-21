@@ -5,6 +5,8 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const stationRoutes = require('./routes/stationRoutes');
 const measurementRoutes = require('./routes/measurementRoutes');
+const alertRoutes = require('./routes/alertRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/stations', stationRoutes);
 app.use('/api/measurements', measurementRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
