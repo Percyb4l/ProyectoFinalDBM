@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const AdminPanel = () => {
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { logout, user } = useAuth();
 
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
+        // Auth check is now handled by ProtectedRoute, but keeping this as double check or for initial load logic if needed
+        // Actually, useAuth handles the state, so we can rely on that.
+        // But since we are inside a ProtectedRoute, user should be present.
         if (!user || user.role !== 'admin') {
-            navigate('/login');
-            return;
+            // This might happen if context is still loading or something, but ProtectedRoute handles it.
+            // We can just fetch stations.
         }
         fetchStations();
-    }, [navigate]);
+    }, [user, navigate]);
 
     const fetchStations = async () => {
         try {
@@ -40,22 +44,28 @@ const AdminPanel = () => {
     };
 
     const handleEdit = (id) => {
-        // Placeholder for edit functionality
-        // In a real app, this might open a modal or navigate to an edit page
         const newName = prompt("Enter new name for station:");
         if (newName) {
-            // Simple update for name just to demonstrate
-            api.put(`/stations/${id}`, { name: newName }) // Note: this might fail if other fields are required and not sent, but assuming partial update or just name for now
+            api.put(`/stations/${id}`, { name: newName })
                 .then(() => fetchStations())
                 .catch(err => console.error(err));
         }
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
     };
 
     if (loading) return <div>Loading...</div>;
 
     return (
         <div style={{ padding: '2rem' }}>
-            <h1>Admin Panel - Stations Management</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1>Admin Panel - Stations Management</h1>
+                <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
+            </div>
+
             <button onClick={() => {
                 const name = prompt("Station Name:");
                 const lat = prompt("Latitude:");
@@ -121,6 +131,15 @@ const styles = {
         borderRadius: '4px',
         cursor: 'pointer',
     },
+    logoutBtn: {
+        padding: '8px 16px',
+        backgroundColor: '#6c757d',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+    }
 };
 
 export default AdminPanel;
