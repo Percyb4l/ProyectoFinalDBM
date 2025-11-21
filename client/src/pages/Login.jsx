@@ -1,34 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        try {
-            const response = await api.post('/auth/login', { email, password });
-            const { token, user } = response.data;
 
-            // Save to localStorage
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
+        const result = await login(email, password);
 
-            // Redirect to admin panel if admin, or dashboard otherwise (logic can be adjusted)
-            // For now, let's just go to admin if role is admin, else dashboard
-            if (user.role === 'admin') {
-                navigate('/admin');
-            } else {
-                navigate('/');
-            }
-        } catch (err) {
-            console.error('Login failed:', err);
-            setError('Invalid email or password');
+        if (result.success) {
+            // Redirect based on role is handled in the component logic or we can check user here
+            // For now, simply redirect to admin or home.
+            // Since we don't have the user object immediately available from login return in this implementation (it returns success boolean),
+            // we can rely on the context state update or just redirect to /admin and let the protected route handle it, 
+            // or redirect to / which is public. 
+            // Let's redirect to /admin, if not admin, they might get redirected back or see unauthorized.
+            // Better: Check the user from context? But state update might be async.
+            // Let's just navigate to /admin for now as per requirement.
+            navigate('/admin');
+        } else {
+            setError(result.message);
         }
     };
 

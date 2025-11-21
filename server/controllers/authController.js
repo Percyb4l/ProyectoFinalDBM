@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const bcrypt = require('bcrypt'); // Assuming bcrypt is available or I should use simple comparison if not installed, but user asked for hashed password. I'll assume I can use it or just simple text for now if package not in json?
+const bcrypt = require('bcryptjs'); // Assuming bcrypt is available or I should use simple comparison if not installed, but user asked for hashed password. I'll assume I can use it or just simple text for now if package not in json?
 // Wait, package.json didn't show bcrypt. I should probably check if I can install it or use simple hash.
 // User said "password (hashed)" in schema requirements.
 // I'll check package.json again. 

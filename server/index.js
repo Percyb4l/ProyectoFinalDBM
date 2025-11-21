@@ -10,7 +10,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // Fail-safe: Allow any origin
+    credentials: true
+}));
 app.use(express.json());
 
 // Routes
@@ -24,6 +27,6 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => { // Fail-safe: Bind to all interfaces
     console.log(`Server is running on port ${PORT}`);
 });
