@@ -1,145 +1,218 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
-import { useAuth } from '../context/AuthContext';
+// src/pages/AdminPanel.jsx
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const AdminPanel = () => {
-    const [stations, setStations] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
-    const { logout, user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        // Auth check is now handled by ProtectedRoute, but keeping this as double check or for initial load logic if needed
-        // Actually, useAuth handles the state, so we can rely on that.
-        // But since we are inside a ProtectedRoute, user should be present.
-        if (!user || user.role !== 'admin') {
-            // This might happen if context is still loading or something, but ProtectedRoute handles it.
-            // We can just fetch stations.
-        }
-        fetchStations();
-    }, [user, navigate]);
+  const [stations, setStations] = useState([]);
+  const [loadingStations, setLoadingStations] = useState(true);
+  const [showStationForm, setShowStationForm] = useState(false);
 
+  const [formStation, setFormStation] = useState({
+    institution_id: null,
+    name: "",
+    latitude: "",
+    longitude: "",
+    status: "active",
+  });
+
+  // Cargar estaciones al entrar
+  useEffect(() => {
     const fetchStations = async () => {
-        try {
-            const response = await api.get('/stations');
-            setStations(response.data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching stations:', error);
-            setLoading(false);
-        }
+      try {
+        const res = await api.get("/stations");
+        setStations(res.data);
+      } catch (error) {
+        console.error("Error obteniendo estaciones:", error);
+      } finally {
+        setLoadingStations(false);
+      }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this station?')) {
-            try {
-                await api.delete(`/stations/${id}`);
-                setStations(stations.filter(station => station.id !== id));
-            } catch (error) {
-                console.error('Error deleting station:', error);
-                alert('Failed to delete station');
-            }
-        }
-    };
+    fetchStations();
+  }, []);
 
-    const handleEdit = (id) => {
-        const newName = prompt("Enter new name for station:");
-        if (newName) {
-            api.put(`/stations/${id}`, { name: newName })
-                .then(() => fetchStations())
-                .catch(err => console.error(err));
-        }
-    };
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+  const handleStationChange = (e) => {
+    const { name, value } = e.target;
+    setFormStation((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (loading) return <div>Loading...</div>;
-
-    return (
-        <div style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1>Admin Panel - Stations Management</h1>
-                <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
-            </div>
-
-            <button onClick={() => {
-                const name = prompt("Station Name:");
-                const lat = prompt("Latitude:");
-                const long = prompt("Longitude:");
-                if (name && lat && long) {
-                    api.post('/stations', { name, latitude: parseFloat(lat), longitude: parseFloat(long) })
-                        .then(() => fetchStations());
-                }
-            }} style={{ marginBottom: '1rem', padding: '0.5rem', cursor: 'pointer' }}>Add New Station</button>
-
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#f2f2f2', textAlign: 'left' }}>
-                        <th style={styles.th}>ID</th>
-                        <th style={styles.th}>Name</th>
-                        <th style={styles.th}>Latitude</th>
-                        <th style={styles.th}>Longitude</th>
-                        <th style={styles.th}>Status</th>
-                        <th style={styles.th}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {stations.map((station) => (
-                        <tr key={station.id} style={{ borderBottom: '1px solid #ddd' }}>
-                            <td style={styles.td}>{station.id}</td>
-                            <td style={styles.td}>{station.name}</td>
-                            <td style={styles.td}>{station.latitude}</td>
-                            <td style={styles.td}>{station.longitude}</td>
-                            <td style={styles.td}>{station.status ? 'Active' : 'Inactive'}</td>
-                            <td style={styles.td}>
-                                <button onClick={() => handleEdit(station.id)} style={styles.editBtn}>Edit</button>
-                                <button onClick={() => handleDelete(station.id)} style={styles.deleteBtn}>Delete</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-};
-
-const styles = {
-    th: {
-        padding: '12px',
-        borderBottom: '1px solid #ddd',
-    },
-    td: {
-        padding: '12px',
-    },
-    editBtn: {
-        marginRight: '8px',
-        padding: '4px 8px',
-        backgroundColor: '#ffc107',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-    deleteBtn: {
-        padding: '4px 8px',
-        backgroundColor: '#dc3545',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    },
-    logoutBtn: {
-        padding: '8px 16px',
-        backgroundColor: '#6c757d',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
+  const handleCreateStation = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...formStation,
+        latitude: parseFloat(formStation.latitude),
+        longitude: parseFloat(formStation.longitude),
+      };
+      const res = await api.post("/stations", payload);
+      setStations((prev) => [...prev, res.data]);
+      setShowStationForm(false);
+      setFormStation({
+        institution_id: null,
+        name: "",
+        latitude: "",
+        longitude: "",
+        status: "active",
+      });
+    } catch (error) {
+      console.error("Error creando estación:", error.response?.data || error);
+      alert("Error creando estación. Revisa la consola.");
     }
+  };
+
+  return (
+    <div className="admin-layout">
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="admin-logo">VriSA</div>
+        <nav className="admin-menu">
+          <button className="admin-menu-item admin-menu-item-active">
+            Dashboard
+          </button>
+          <button className="admin-menu-item">Gestión institucional</button>
+          <button className="admin-menu-item">Usuarios</button>
+          <button className="admin-menu-item">Solicitudes</button>
+          <button className="admin-menu-item">Reportes</button>
+          <button className="admin-menu-item">Configuración</button>
+        </nav>
+        <div className="admin-user-box">
+          <div className="admin-user-name">{user?.name}</div>
+          <div className="admin-user-role">{user?.role}</div>
+          <button className="admin-logout-btn" onClick={handleLogout}>
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+
+      {/* Contenido principal */}
+      <main className="admin-main">
+        <h1 className="admin-title">Gestión institucional</h1>
+
+        <section className="admin-section">
+          <div className="admin-section-header">
+            <h2>Estaciones registradas</h2>
+            <button
+              className="admin-btn-primary"
+              onClick={() => setShowStationForm(true)}
+            >
+              + Registrar estación
+            </button>
+          </div>
+
+          {loadingStations ? (
+            <p>Cargando estaciones...</p>
+          ) : stations.length === 0 ? (
+            <p>No hay estaciones registradas.</p>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Latitud</th>
+                  <th>Longitud</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stations.map((st) => (
+                  <tr key={st.id}>
+                    <td>{st.id}</td>
+                    <td>{st.name}</td>
+                    <td>{st.latitude}</td>
+                    <td>{st.longitude}</td>
+                    <td>{st.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+
+        {/* Modal / panel para registrar estación */}
+        {showStationForm && (
+          <div className="modal-backdrop" onClick={() => setShowStationForm(false)}>
+            <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+              <h2>Registro de nueva estación</h2>
+              <form className="modal-form" onSubmit={handleCreateStation}>
+                <label className="modal-label">
+                  Nombre de la estación
+                  <input
+                    type="text"
+                    name="name"
+                    value={formStation.name}
+                    onChange={handleStationChange}
+                    required
+                  />
+                </label>
+
+                <div className="modal-row">
+                  <label className="modal-label">
+                    Latitud
+                    <input
+                      type="number"
+                      step="0.000001"
+                      name="latitude"
+                      value={formStation.latitude}
+                      onChange={handleStationChange}
+                      required
+                    />
+                  </label>
+                  <label className="modal-label">
+                    Longitud
+                    <input
+                      type="number"
+                      step="0.000001"
+                      name="longitude"
+                      value={formStation.longitude}
+                      onChange={handleStationChange}
+                      required
+                    />
+                  </label>
+                </div>
+
+                <label className="modal-label">
+                  Estado
+                  <select
+                    name="status"
+                    value={formStation.status}
+                    onChange={handleStationChange}
+                  >
+                    <option value="active">Activa</option>
+                    <option value="inactive">Inactiva</option>
+                    <option value="maintenance">Mantenimiento</option>
+                  </select>
+                </label>
+
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="modal-btn-secondary"
+                    onClick={() => setShowStationForm(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button type="submit" className="modal-btn-primary">
+                    Registrar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default AdminPanel;

@@ -1,26 +1,374 @@
-/* Estilos base para VriSA */
-.app-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Layout general VriSA */
+.vrisa-layout {
+  min-height: 100vh;
+  background: #f4f5f7;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-header {
-  background-color: #f0f9ff;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #bae6fd;
+/* Topbar Dashboard */
+.vrisa-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #d4d4d4;
+  background: #ffffff;
 }
 
-h1 {
-  color: #0369a1;
+.vrisa-logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #1d4ed8;
 }
 
-.card {
-  background: white;
-  padding: 20px;
+.vrisa-menu {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.vrisa-tab {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #d4d4d4;
+  background: #f9fafb;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.vrisa-tab-active {
+  background: #e5f0ff;
+  border-color: #93c5fd;
+}
+
+.vrisa-login-btn a {
+  font-size: 0.85rem;
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+/* Dashboard main */
+.vrisa-main {
+  padding: 1rem 1.5rem 2rem;
+}
+
+.vrisa-cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.vrisa-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.vrisa-card-value {
+  height: 1.8rem;
+  border: 1px solid #e5e7eb;
+  margin: 0.4rem 0;
+}
+
+.vrisa-card-bar {
+  height: 0.4rem;
+  background: #e5e7eb;
+}
+
+/* Grid mapa + filtros */
+.vrisa-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.vrisa-map,
+.vrisa-filters {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.vrisa-map-placeholder {
+  border: 1px dashed #d1d5db;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.vrisa-filter-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.vrisa-select {
+  margin-top: 0.2rem;
+  padding: 0.35rem;
+  border: 1px solid #d1d5db;
+}
+
+.vrisa-btn-primary {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Chart section */
+.vrisa-chart-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.vrisa-chart-placeholder {
+  border: 1px dashed #d1d5db;
+  height: 160px;
+  margin-top: 0.5rem;
+}
+
+/* Login */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+}
+
+.login-card {
+  background: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #d1d5db;
+  padding: 2rem;
+  width: 320px;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1d4ed8;
+}
+
+.login-subtitle {
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-label {
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-input {
+  margin-top: 0.2rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+}
+
+.login-button {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.login-error {
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+/* Admin layout */
+.admin-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: #f4f5f7;
+}
+
+.admin-sidebar {
+  background: #111827;
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.admin-logo {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-menu {
+  flex: 1;
+}
+
+.admin-menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border: none;
+  background: transparent;
+  color: #d1d5db;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.admin-menu-item-active {
+  background: #374151;
+  border-radius: 4px;
+}
+
+.admin-user-box {
+  border-top: 1px solid #374151;
+  padding-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.admin-logout-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.4rem;
+  border-radius: 4px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+/* Admin main */
+.admin-main {
+  padding: 1.5rem 2rem;
+}
+
+.admin-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.admin-section {
+  background: #ffffff;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.admin-btn-primary {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  background: #1d4ed8;
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.admin-table {
+  width: 100%;
+  font-size: 0.8rem;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem 0.6rem;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-card {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 6px;
+  width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-label {
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.modal-btn-secondary,
+.modal-btn-primary {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.modal-btn-secondary {
+  background: #e5e7eb;
+}
+
+.modal-btn-primary {
+  background: #1d4ed8;
+  color: white;
 }
