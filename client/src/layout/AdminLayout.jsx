@@ -1,19 +1,27 @@
 // src/layout/AdminLayout.jsx
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   const menu = [
     { label: "Dashboard", path: "/admin/dashboard" },
-    { label: "Gestión Institucional", path: "/admin/institutions/requests" },
+    { label: "Estaciones", path: "/admin/stations" },
+    { label: "Instituciones", path: "/admin/institutions" },
+    { label: "Sensores", path: "/admin/sensors" },
+    { label: "Mediciones", path: "/admin/measurements" },
+    { label: "Alertas", path: "/admin/alerts" },
     { label: "Usuarios", path: "/admin/users" },
-    { label: "Solicitudes", path: "/admin/requests" },
-    { label: "Reportes", path: "/admin/reports" },
-    { label: "Configuración", path: "/admin/settings" },
+    { label: "Solicitudes", path: "/admin/institutions/requests" },
   ];
 
   return (
@@ -27,9 +35,8 @@ const AdminLayout = ({ children }) => {
             <Link
               key={item.path}
               to={item.path}
-              className={`admin-menu-item ${
-                location.pathname === item.path ? "admin-menu-item-active" : ""
-              }`}
+              className={`admin-menu-item ${location.pathname === item.path ? "admin-menu-item-active" : ""
+                }`}
             >
               {item.label}
             </Link>
@@ -39,7 +46,7 @@ const AdminLayout = ({ children }) => {
         <div className="admin-user-box">
           <div className="admin-user-name">{user?.name}</div>
           <div className="admin-user-role">{user?.role}</div>
-          <button className="admin-logout-btn" onClick={logout}>
+          <button className="admin-logout-btn" onClick={handleLogout}>
             Cerrar sesión
           </button>
         </div>

@@ -32,6 +32,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Ruta raíz para verificar estado
+app.get("/", (req, res) => {
+    res.send("Backend VRISA is running!");
+});
+
 
 // Rutas API (prefijo /api/...)
 app.use("/api/auth", authRoutes);
