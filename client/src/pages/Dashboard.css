@@ -1,52 +1,85 @@
-/* Dashboard Layout */
+/* Dashboard Layout - Mejoras adicionales */
 .vrisa-layout {
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  gap: 1.5rem;
-  max-width: 1200px;
-  margin: auto;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn var(--transition-slow) ease-in-out;
 }
 
 .vrisa-header {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #1a1a1a;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  letter-spacing: -1px;
 }
 
 .vrisa-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
 }
 
 .vrisa-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  transition: 0.2s ease;
+  background: var(--bg-primary);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.vrisa-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+  transform: scaleX(0);
+  transition: transform var(--transition-base);
+}
+
+.vrisa-card:hover::before {
+  transform: scaleX(1);
 }
 
 .vrisa-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 .vrisa-card-title {
-  font-size: 1.2rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
 }
 
 .vrisa-card-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #4f46e5;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
