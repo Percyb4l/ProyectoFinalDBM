@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import { createStation } from "../services/stationService";
 import { getUsers } from "../services/userService";
+import { uploadCertificate } from "../services/certificateService";
 
 /**
  * StationModal Component
@@ -24,7 +25,7 @@ import { getUsers } from "../services/userService";
  * - Sensor creation (model, brand)
  * - Variable associations (sensor_variables)
  * 
- * Note: Certificate upload is still pending implementation.
+ * - Certificate upload (PDF/images) with type and expiration date
  * 
  * @param {Object} props - Component props
  * @param {Function} props.close - Callback to close the modal
@@ -36,25 +37,29 @@ import { getUsers } from "../services/userService";
 const StationModal = ({ close, refresh }) => {
   const [variables, setVariables] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [institutions, setInstitutions] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
     latitude: "",
     longitude: "",
     status: "active",
+    institution_id: "",
     sensor_model: "",
     sensor_brand: "",
     technician_id: "",
     variable_ids: [],
-    certificate_name: "",
+    certificate_file: null,
+    certificate_type: "calibracion",
+    certificate_expiration_date: "",
     auto_credentials: "",
   });
 
   /**
-   * Loads variables and technicians from the API
+   * Loads variables, technicians, and institutions from the API
    * 
-   * Fetches available environmental variables and filters users to find
-   * station operators who can be assigned as technicians.
+   * Fetches available environmental variables, filters users to find
+   * station operators who can be assigned as technicians, and loads institutions.
    * 
    * @async
    * @function loadData
@@ -62,17 +67,22 @@ const StationModal = ({ close, refresh }) => {
    */
   const loadData = async () => {
     try {
-      const varsRes = await api.get("/variables");
-      setVariables(varsRes.data || []);
+      const [varsRes, usersRes, instRes] = await Promise.all([
+        api.get("/variables"),
+        getUsers(),
+        api.get("/institutions")
+      ]);
 
-      const usersRes = await getUsers();
+      setVariables(varsRes.data || []);
+      setInstitutions(instRes.data || []);
+
       // Filter users to find station operators
       const techs = (usersRes.data || []).filter((u) =>
         u.role?.includes("operador_estacion")
       );
       setTechnicians(techs);
     } catch (err) {
-      console.error("Error cargando variables/técnicos:", err);
+      console.error("Error cargando datos:", err);
     }
   };
 
@@ -112,16 +122,43 @@ const StationModal = ({ close, refresh }) => {
   /**
    * Handles certificate file selection
    * 
-   * Currently only stores the filename. Full file upload implementation
-   * would be needed for production.
+   * Stores the file object for later upload.
+   * Validates file type and size.
    * 
    * @param {Event} e - File input change event
    */
   const handleCertificate = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    // MOCKUP: only store filename for now
-    setForm((f) => ({ ...f, certificate_name: file.name }));
+    if (!file) {
+      setForm((f) => ({ ...f, certificate_file: null }));
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert("Tipo de archivo no permitido. Solo se permiten PDF e imágenes (JPEG, PNG, GIF, WEBP)");
+      e.target.value = "";
+      return;
+    }
+
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert("El archivo es demasiado grande. El tamaño máximo es 10MB");
+      e.target.value = "";
+      return;
+    }
+
+    setForm((f) => ({ ...f, certificate_file: file }));
   };
 
   /**
@@ -144,6 +181,7 @@ const StationModal = ({ close, refresh }) => {
    * - Technician assignment (technician_id)
    * - Sensor creation (if model/brand provided)
    * - Variable associations (if variables selected)
+   * - Certificate upload (if file provided)
    * 
    * @async
    * @param {Event} e - Form submit event
@@ -153,26 +191,52 @@ const StationModal = ({ close, refresh }) => {
     e.preventDefault();
 
     try {
-      // Prepare station data with all fields
+      // Step 1: Create the station first
       const stationData = {
         name: form.name,
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
         status: form.status || "active",
-        // Include technician_id if selected
+        institution_id: form.institution_id ? parseInt(form.institution_id) : null,
         technician_id: form.technician_id ? parseInt(form.technician_id) : null,
-        // Include sensor data if provided
         sensor_model: form.sensor_model || null,
         sensor_brand: form.sensor_brand || null,
-        // Include variable IDs array if any selected
         variable_ids: form.variable_ids && form.variable_ids.length > 0 
           ? form.variable_ids 
           : []
       };
 
-      const response = await createStation(stationData);
+      const stationResponse = await createStation(stationData);
+      const createdStation = stationResponse.data;
       
-      console.log("Estación creada exitosamente:", response.data);
+      console.log("Estación creada exitosamente:", createdStation);
+
+      // Step 2: Upload certificate if file was provided
+      if (form.certificate_file && createdStation.id) {
+        try {
+          const formData = new FormData();
+          formData.append("certificate", form.certificate_file);
+          formData.append("station_id", createdStation.id);
+          formData.append("type", form.certificate_type);
+          
+          // Add expiration date if provided
+          if (form.certificate_expiration_date) {
+            formData.append("expiration_date", form.certificate_expiration_date);
+          }
+
+          // Add sensor_id if sensor was created
+          if (createdStation.sensor && createdStation.sensor.id) {
+            formData.append("sensor_id", createdStation.sensor.id);
+          }
+
+          await uploadCertificate(formData);
+          console.log("Certificado subido exitosamente");
+        } catch (certError) {
+          console.error("Error subiendo certificado:", certError);
+          // Don't fail the whole operation if certificate upload fails
+          alert(`Estación creada, pero hubo un error al subir el certificado: ${certError.response?.data?.error || certError.message}`);
+        }
+      }
       
       refresh();
       close();
@@ -212,6 +276,22 @@ const StationModal = ({ close, refresh }) => {
                   <option value="active">Activa</option>
                   <option value="inactive">Inactiva</option>
                   <option value="maintenance">Mantenimiento</option>
+                </select>
+              </label>
+
+              <label className="modal-label">
+                Institución
+                <select
+                  name="institution_id"
+                  value={form.institution_id}
+                  onChange={handleChange}
+                >
+                  <option value="">Sin institución</option>
+                  {institutions.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -306,15 +386,43 @@ const StationModal = ({ close, refresh }) => {
           <div className="modal-row">
             <div className="modal-col">
               <label className="modal-label">
-                Certificado (PDF)
-                <input type="file" accept="application/pdf" onChange={handleCertificate} />
+                Tipo de Certificado
+                <select
+                  name="certificate_type"
+                  value={form.certificate_type}
+                  onChange={handleChange}
+                >
+                  <option value="calibracion">Calibración</option>
+                  <option value="mantenimiento">Mantenimiento</option>
+                </select>
               </label>
 
-              {form.certificate_name && (
+              <label className="modal-label">
+                Certificado (PDF o Imagen)
+                <input 
+                  type="file" 
+                  accept="application/pdf,image/jpeg,image/jpg,image/png,image/gif,image/webp" 
+                  onChange={handleCertificate} 
+                />
+              </label>
+
+              {form.certificate_file && (
                 <div className="certificate-preview">
-                  Archivo seleccionado: <strong>{form.certificate_name}</strong>
+                  Archivo seleccionado: <strong>{form.certificate_file.name}</strong>
+                  <br />
+                  Tamaño: {(form.certificate_file.size / 1024 / 1024).toFixed(2)} MB
                 </div>
               )}
+
+              <label className="modal-label">
+                Fecha de Expiración (Opcional)
+                <input
+                  type="date"
+                  name="certificate_expiration_date"
+                  value={form.certificate_expiration_date}
+                  onChange={handleChange}
+                />
+              </label>
             </div>
 
             <div className="modal-col">

@@ -39,16 +39,37 @@ export const getAllStations = async (req, res, next) => {
   try {
     const { search, status, institution_id } = req.query;
     
+    // Check if technician_id column exists in stations table
+    // This allows the code to work even if the migration hasn't been run yet
+    const columnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'stations' AND column_name = 'technician_id'
+    `);
+    
+    const hasTechnicianId = columnCheck.rows.length > 0;
+    
     // Base query with LEFT JOIN to include institution name and technician name even if station has no institution/technician
     // Using WHERE 1=1 allows dynamic WHERE clause construction without complex conditionals
     let query = `SELECT s.*, 
-                        i.name as institution_name,
+                        i.name as institution_name`;
+    
+    // Only include technician fields if the column exists
+    if (hasTechnicianId) {
+      query += `,
                         u.name as technician_name,
-                        u.email as technician_email
-                 FROM stations s 
-                 LEFT JOIN institutions i ON s.institution_id = i.id 
-                 LEFT JOIN users u ON s.technician_id = u.id
-                 WHERE 1=1`;
+                        u.email as technician_email`;
+    }
+    
+    query += ` FROM stations s 
+                 LEFT JOIN institutions i ON s.institution_id = i.id`;
+    
+    // Only join users table if technician_id column exists
+    if (hasTechnicianId) {
+      query += ` LEFT JOIN users u ON s.technician_id = u.id`;
+    }
+    
+    query += ` WHERE 1=1`;
     const params = [];
     let paramCount = 0;
 

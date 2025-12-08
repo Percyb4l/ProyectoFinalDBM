@@ -45,6 +45,11 @@ api.interceptors.request.use(
       // Format: "Bearer <token>"
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Don't override Content-Type if it's already set (e.g., multipart/form-data)
+    // Axios will automatically set it for FormData
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error) => Promise.reject(error)

@@ -39,20 +39,51 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Query user by email - email is unique in the database
-    const query = `SELECT * FROM users WHERE email = $1`;
+    // Query user by email with institution data - email is unique in the database
+    const query = `
+      SELECT 
+        u.*,
+        i.id as institution_id_full,
+        i.name as institution_name,
+        i.color_primary,
+        i.color_secondary,
+        i.logo_url
+      FROM users u
+      LEFT JOIN institutions i ON u.institution_id = i.id
+      WHERE u.email = $1
+    `;
     const result = await pool.query(query, [email]);
 
     // Return 401 if user not found (don't reveal if email exists)
     if (result.rows.length === 0)
       return res.status(401).json({ error: "Usuario no encontrado" });
 
-    const user = result.rows[0];
+    const userRow = result.rows[0];
 
     // Compare provided password with hashed password in database
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, userRow.password);
     if (!validPassword)
       return res.status(401).json({ error: "Contraseña incorrecta" });
+
+    // Build user object with institution data if available
+    const user = {
+      id: userRow.id,
+      name: userRow.name,
+      email: userRow.email,
+      role: userRow.role,
+      institution_id: userRow.institution_id,
+    };
+
+    // Include institution data if user has an institution
+    if (userRow.institution_id_full) {
+      user.institution = {
+        id: userRow.institution_id_full,
+        name: userRow.institution_name,
+        color_primary: userRow.color_primary,
+        color_secondary: userRow.color_secondary,
+        logo_url: userRow.logo_url,
+      };
+    }
 
     // Generate JWT token with user ID and role
     // Token expiration is set via JWT_EXPIRES environment variable

@@ -125,3 +125,21 @@ CREATE TABLE integration_requests (
     approved_at TIMESTAMP
 );
 
+-- CERTIFICATES
+CREATE TABLE certificates (
+    id SERIAL PRIMARY KEY,
+    station_id INTEGER REFERENCES stations(id) ON DELETE CASCADE,
+    sensor_id INTEGER REFERENCES sensors(id) ON DELETE SET NULL,
+    file_url TEXT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_size INTEGER,
+    mime_type VARCHAR(100),
+    type VARCHAR(50) NOT NULL CHECK (
+        type IN ('calibracion', 'mantenimiento')
+    ),
+    expiration_date DATE,
+    uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

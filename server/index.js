@@ -18,6 +18,8 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 // Import database config to initialize connection and log status
 import "./config/db.js";
 
@@ -35,6 +37,7 @@ import institutionRoutes from "./routes/institutionRoutes.js";
 import thresholdRoutes from "./routes/thresholdRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
 import variableRoutes from "./routes/variableRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
 
 /**
  * Express application instance
@@ -47,6 +50,10 @@ const app = express();
 app.use(cors());
 // JSON parser for request bodies
 app.use(express.json());
+// Serve static files from uploads directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+app.use("/uploads", express.static(join(__dirname, "uploads")));
 
 /**
  * Health check route
@@ -73,6 +80,7 @@ app.use("/api/institutions", institutionRoutes);
 app.use("/api/thresholds", thresholdRoutes);
 app.use("/api/integrations", integrationRoutes);
 app.use("/api/variables", variableRoutes);
+app.use("/api/certificates", certificateRoutes);
 
 // Global error handler middleware (MUST be registered last)
 // Catches all errors from route handlers and sends standardized responses

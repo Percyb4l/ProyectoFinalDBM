@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useBranding } from "../hooks/useBranding";
 
 /**
  * AdminLayout Component
@@ -34,6 +35,9 @@ const AdminLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Apply institutional branding colors
+  useBranding();
 
   /**
    * Handles user logout
