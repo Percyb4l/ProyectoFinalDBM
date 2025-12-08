@@ -6,9 +6,13 @@ import api from "../../services/api";
 
 const StationsPage = () => {
   const [stations, setStations] = useState([]);
+  const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingStation, setEditingStation] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterInstitution, setFilterInstitution] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     latitude: "",
@@ -20,6 +24,12 @@ const StationsPage = () => {
   const columns = [
     { key: "id", label: "ID", sortable: true },
     { key: "name", label: "Nombre", sortable: true },
+    { 
+      key: "institution_name", 
+      label: "Institución", 
+      sortable: true,
+      render: (value) => value || "Sin institución"
+    },
     { key: "latitude", label: "Latitud", sortable: true },
     { key: "longitude", label: "Longitud", sortable: true },
     {
@@ -35,13 +45,34 @@ const StationsPage = () => {
   ];
 
   useEffect(() => {
+    loadInstitutions();
     loadStations();
   }, []);
+
+  useEffect(() => {
+    loadStations();
+  }, [searchTerm, filterStatus, filterInstitution]);
+
+  const loadInstitutions = async () => {
+    try {
+      const res = await api.get("/institutions");
+      setInstitutions(res.data);
+    } catch (error) {
+      console.error("Error loading institutions:", error);
+    }
+  };
 
   const loadStations = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/stations");
+      const params = new URLSearchParams();
+      if (searchTerm) params.append("search", searchTerm);
+      if (filterStatus) params.append("status", filterStatus);
+      if (filterInstitution) params.append("institution_id", filterInstitution);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/stations?${queryString}` : "/stations";
+      const res = await api.get(url);
       setStations(res.data);
     } catch (error) {
       console.error("Error loading stations:", error);
@@ -94,6 +125,7 @@ const StationsPage = () => {
       }
 
       handleCloseModal();
+      loadStations(); // Reload to refresh filters
     } catch (error) {
       console.error("Error saving station:", error);
       alert("Error al guardar estación");
@@ -121,6 +153,64 @@ const StationsPage = () => {
           onClick={() => setShowModal(true)}
         >
           + Nueva Estación
+        </button>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="filter-section">
+        <div className="filter-group">
+          <label htmlFor="search">Buscar:</label>
+          <input
+            id="search"
+            type="text"
+            placeholder="Buscar por nombre..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="status-filter">Estado:</label>
+          <select
+            id="status-filter"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Todos</option>
+            <option value="active">Activa</option>
+            <option value="inactive">Inactiva</option>
+            <option value="maintenance">Mantenimiento</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="institution-filter">Institución:</label>
+          <select
+            id="institution-filter"
+            value={filterInstitution}
+            onChange={(e) => setFilterInstitution(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Todas</option>
+            {institutions.map(inst => (
+              <option key={inst.id} value={inst.id}>
+                {inst.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          className="btn-secondary"
+          onClick={() => {
+            setSearchTerm("");
+            setFilterStatus("");
+            setFilterInstitution("");
+          }}
+        >
+          Limpiar filtros
         </button>
       </div>
 
@@ -173,16 +263,33 @@ const StationsPage = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Estado</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            >
-              <option value="active">Activa</option>
-              <option value="inactive">Inactiva</option>
-              <option value="maintenance">Mantenimiento</option>
-            </select>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Estado</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <option value="active">Activa</option>
+                <option value="inactive">Inactiva</option>
+                <option value="maintenance">Mantenimiento</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Institución</label>
+              <select
+                value={formData.institution_id || ""}
+                onChange={(e) => setFormData({ ...formData, institution_id: e.target.value ? parseInt(e.target.value) : null })}
+              >
+                <option value="">Sin institución</option>
+                {institutions.map(inst => (
+                  <option key={inst.id} value={inst.id}>
+                    {inst.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-actions">
@@ -209,6 +316,66 @@ const StationsPage = () => {
           font-size: 1.875rem;
           font-weight: 700;
           color: #111827;
+        }
+
+        .filter-section {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+          padding: 1.5rem;
+          background: var(--bg-primary);
+          border-radius: var(--border-radius);
+          border: 1px solid var(--border-color);
+          box-shadow: var(--shadow-sm);
+          flex-wrap: wrap;
+        }
+
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .filter-group label {
+          font-weight: 600;
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+        }
+
+        .search-input {
+          padding: var(--spacing-md);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-sm);
+          font-size: 0.9rem;
+          min-width: 250px;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          transition: all var(--transition-base);
+        }
+
+        .search-input:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-select {
+          padding: var(--spacing-md);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-sm);
+          font-size: 0.9rem;
+          min-width: 180px;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          transition: all var(--transition-base);
+          cursor: pointer;
+        }
+
+        .filter-select:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         .btn-primary {

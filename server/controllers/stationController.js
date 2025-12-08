@@ -2,8 +2,39 @@ import pool from "../config/db.js";
 
 export const getAllStations = async (req, res, next) => {
   try {
-    const query = `SELECT * FROM stations ORDER BY id ASC`;
-    const result = await pool.query(query);
+    const { search, status, institution_id } = req.query;
+    
+    let query = `SELECT s.*, i.name as institution_name 
+                 FROM stations s 
+                 LEFT JOIN institutions i ON s.institution_id = i.id 
+                 WHERE 1=1`;
+    const params = [];
+    let paramCount = 0;
+
+    // Search by name
+    if (search) {
+      paramCount++;
+      query += ` AND s.name ILIKE $${paramCount}`;
+      params.push(`%${search}%`);
+    }
+
+    // Filter by status
+    if (status) {
+      paramCount++;
+      query += ` AND s.status = $${paramCount}`;
+      params.push(status);
+    }
+
+    // Filter by institution
+    if (institution_id) {
+      paramCount++;
+      query += ` AND s.institution_id = $${paramCount}`;
+      params.push(institution_id);
+    }
+
+    query += ` ORDER BY s.id ASC`;
+
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     next(error);

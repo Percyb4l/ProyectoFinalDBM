@@ -24,6 +24,7 @@ import sensorRoutes from "./routes/sensorRoutes.js";
 import institutionRoutes from "./routes/institutionRoutes.js";
 import thresholdRoutes from "./routes/thresholdRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
+import variableRoutes from "./routes/variableRoutes.js";
 
 
 const app = express();
@@ -49,6 +50,7 @@ app.use("/api/sensors", sensorRoutes);
 app.use("/api/institutions", institutionRoutes);
 app.use("/api/thresholds", thresholdRoutes);
 app.use("/api/integrations", integrationRoutes);
+app.use("/api/variables", variableRoutes);
 
 
 // Middleware de manejo global de errores (SIEMPRE al final)
