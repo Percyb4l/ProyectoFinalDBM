@@ -37,20 +37,108 @@ import pool from "../config/db.js";
  * }
  */
 export const createMeasurement = async (req, res, next) => {
+  const client = await pool.connect();
+  
   try {
+    await client.query('BEGIN');
+    
     const { sensor_id, variable_id, value } = req.body;
 
-    const query = `
+    // Step 1: Insert the measurement
+    const measurementQuery = `
       INSERT INTO measurements (sensor_id, variable_id, value)
       VALUES ($1, $2, $3)
       RETURNING *
     `;
 
-    const result = await pool.query(query, [sensor_id, variable_id, value]);
+    const measurementResult = await client.query(measurementQuery, [
+      sensor_id,
+      variable_id,
+      value,
+    ]);
 
-    res.status(201).json(result.rows[0]);
+    const measurement = measurementResult.rows[0];
+
+    // Step 2: Get station_id from sensor
+    const sensorQuery = `SELECT station_id FROM sensors WHERE id = $1`;
+    const sensorResult = await client.query(sensorQuery, [sensor_id]);
+
+    if (sensorResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: "Sensor no encontrado" });
+    }
+
+    const station_id = sensorResult.rows[0].station_id;
+
+    // Step 3: Get threshold for this variable
+    const thresholdQuery = `
+      SELECT low, medium, high, critical
+      FROM thresholds
+      WHERE variable_id = $1
+    `;
+    const thresholdResult = await client.query(thresholdQuery, [variable_id]);
+
+    // Step 4: Check if value exceeds thresholds and create alert if needed
+    if (thresholdResult.rows.length > 0) {
+      const threshold = thresholdResult.rows[0];
+      let severity = null;
+      let message = null;
+
+      // Determine severity level (check from highest to lowest)
+      if (threshold.critical !== null && value > threshold.critical) {
+        severity = 'critical';
+        message = `Valor crítico detectado: ${value} ${variable_id} excede el umbral crítico de ${threshold.critical}`;
+      } else if (threshold.high !== null && value > threshold.high) {
+        severity = 'high';
+        message = `Valor alto detectado: ${value} ${variable_id} excede el umbral alto de ${threshold.high}`;
+      } else if (threshold.medium !== null && value > threshold.medium) {
+        severity = 'medium';
+        message = `Valor medio detectado: ${value} ${variable_id} excede el umbral medio de ${threshold.medium}`;
+      } else if (threshold.low !== null && value > threshold.low) {
+        severity = 'low';
+        message = `Valor bajo detectado: ${value} ${variable_id} excede el umbral bajo de ${threshold.low}`;
+      }
+
+      // Step 5: Create alert if threshold was exceeded
+      if (severity) {
+        // Check if there's already an active alert for this station/variable in the last hour
+        const existingAlertQuery = `
+          SELECT id
+          FROM alerts
+          WHERE station_id = $1
+            AND variable_id = $2
+            AND is_resolved = FALSE
+            AND created_at > NOW() - INTERVAL '1 hour'
+        `;
+        const existingAlertResult = await client.query(existingAlertQuery, [
+          station_id,
+          variable_id,
+        ]);
+
+        // Only create alert if no active alert exists in the last hour
+        if (existingAlertResult.rows.length === 0) {
+          const alertQuery = `
+            INSERT INTO alerts (station_id, variable_id, message, severity)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+          `;
+          await client.query(alertQuery, [
+            station_id,
+            variable_id,
+            message,
+            severity,
+          ]);
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json(measurement);
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 
