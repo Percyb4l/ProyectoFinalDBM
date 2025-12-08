@@ -18,8 +18,13 @@ import { getUsers } from "../services/userService";
  * StationModal Component
  * 
  * Provides a comprehensive form for registering new monitoring stations.
- * Currently saves only basic station data; sensor, variable, and certificate
- * associations are stored in form state but not yet persisted to backend.
+ * Saves complete station data including:
+ * - Station basic info (name, coordinates, status)
+ * - Technician assignment (technician_id)
+ * - Sensor creation (model, brand)
+ * - Variable associations (sensor_variables)
+ * 
+ * Note: Certificate upload is still pending implementation.
  * 
  * @param {Object} props - Component props
  * @param {Function} props.close - Callback to close the modal
@@ -134,9 +139,11 @@ const StationModal = ({ close, refresh }) => {
   /**
    * Handles form submission
    * 
-   * Currently saves only basic station data (name, coordinates, status).
-   * Sensor, variable, and certificate associations are stored in form
-   * but not yet persisted to backend.
+   * Saves complete station data including:
+   * - Basic station info (name, coordinates, status)
+   * - Technician assignment (technician_id)
+   * - Sensor creation (if model/brand provided)
+   * - Variable associations (if variables selected)
    * 
    * @async
    * @param {Event} e - Form submit event
@@ -146,21 +153,33 @@ const StationModal = ({ close, refresh }) => {
     e.preventDefault();
 
     try {
-      // For now, save ONLY the station to database.
-      // Other fields (sensor, variables, certificates) are visual mockups.
-      // TODO: Integrate sensor/variable/certificate creation
-      await createStation({
+      // Prepare station data with all fields
+      const stationData = {
         name: form.name,
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
-        status: "active",
-      });
+        status: form.status || "active",
+        // Include technician_id if selected
+        technician_id: form.technician_id ? parseInt(form.technician_id) : null,
+        // Include sensor data if provided
+        sensor_model: form.sensor_model || null,
+        sensor_brand: form.sensor_brand || null,
+        // Include variable IDs array if any selected
+        variable_ids: form.variable_ids && form.variable_ids.length > 0 
+          ? form.variable_ids 
+          : []
+      };
 
+      const response = await createStation(stationData);
+      
+      console.log("Estación creada exitosamente:", response.data);
+      
       refresh();
       close();
     } catch (err) {
       console.error("Error registrando estación:", err);
-      alert("Error registrando estación. Revisa la consola.");
+      const errorMessage = err.response?.data?.error || err.message || "Error al registrar estación";
+      alert(`Error registrando estación: ${errorMessage}`);
     }
   };
 
@@ -181,6 +200,19 @@ const StationModal = ({ close, refresh }) => {
                   onChange={handleChange}
                   required
                 />
+              </label>
+
+              <label className="modal-label">
+                Estado
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option value="active">Activa</option>
+                  <option value="inactive">Inactiva</option>
+                  <option value="maintenance">Mantenimiento</option>
+                </select>
               </label>
 
               <label className="modal-label">

@@ -39,11 +39,15 @@ export const getAllStations = async (req, res, next) => {
   try {
     const { search, status, institution_id } = req.query;
     
-    // Base query with LEFT JOIN to include institution name even if station has no institution
+    // Base query with LEFT JOIN to include institution name and technician name even if station has no institution/technician
     // Using WHERE 1=1 allows dynamic WHERE clause construction without complex conditionals
-    let query = `SELECT s.*, i.name as institution_name 
+    let query = `SELECT s.*, 
+                        i.name as institution_name,
+                        u.name as technician_name,
+                        u.email as technician_email
                  FROM stations s 
                  LEFT JOIN institutions i ON s.institution_id = i.id 
+                 LEFT JOIN users u ON s.technician_id = u.id
                  WHERE 1=1`;
     const params = [];
     let paramCount = 0;
@@ -83,7 +87,8 @@ export const getAllStations = async (req, res, next) => {
 /**
  * Creates a new monitoring station in the database.
  * 
- * Validates required fields and sets default status to 'active' if not provided.
+ * Creates station, associated sensor (if provided), and links sensor to variables.
+ * Uses a transaction to ensure all-or-nothing creation.
  * 
  * @param {Object} req - Express request object
  * @param {Object} req.body - Station data
@@ -92,10 +97,14 @@ export const getAllStations = async (req, res, next) => {
  * @param {number} req.body.latitude - Geographic latitude coordinate (required)
  * @param {number} req.body.longitude - Geographic longitude coordinate (required)
  * @param {string} [req.body.status='active'] - Station status: 'active', 'inactive', or 'maintenance'
+ * @param {number} [req.body.technician_id] - ID of the user responsible for technical maintenance (nullable)
+ * @param {string} [req.body.sensor_model] - Sensor model name (optional, creates sensor if provided)
+ * @param {string} [req.body.sensor_brand] - Sensor brand/manufacturer (optional, creates sensor if provided)
+ * @param {string[]} [req.body.variable_ids] - Array of variable IDs that the sensor measures (optional)
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  * 
- * @returns {Promise<void>} Sends HTTP 201 with created station object
+ * @returns {Promise<void>} Sends HTTP 201 with created station object including sensor and variables info
  * 
  * @throws {Error} Forwards database constraint violations and errors to error handling middleware
  * 
@@ -106,31 +115,106 @@ export const getAllStations = async (req, res, next) => {
  *   "latitude": 40.7128,
  *   "longitude": -74.0060,
  *   "status": "active",
- *   "institution_id": 1
+ *   "institution_id": 1,
+ *   "technician_id": 5,
+ *   "sensor_model": "PM-2000",
+ *   "sensor_brand": "Environmental Sensors Inc",
+ *   "variable_ids": ["PM25", "PM10", "O3"]
  * }
  */
 export const createStation = async (req, res, next) => {
+  const client = await pool.connect();
+  
   try {
-    const { institution_id, name, latitude, longitude, status } = req.body;
+    await client.query('BEGIN');
+    
+    const { 
+      institution_id, 
+      name, 
+      latitude, 
+      longitude, 
+      status,
+      technician_id,
+      sensor_model,
+      sensor_brand,
+      variable_ids = []
+    } = req.body;
 
-    const query = `
-      INSERT INTO stations (institution_id, name, latitude, longitude, status)
-      VALUES ($1, $2, $3, $4, $5)
+    // Step 1: Create the station
+    const stationQuery = `
+      INSERT INTO stations (institution_id, name, latitude, longitude, status, technician_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
-    const result = await pool.query(query, [
-      institution_id,
+    const stationResult = await client.query(stationQuery, [
+      institution_id || null,
       name,
       latitude,
       longitude,
-      // Default to 'active' if status not provided
       status || "active",
+      technician_id || null
     ]);
 
-    res.status(201).json(result.rows[0]);
+    const station = stationResult.rows[0];
+    let sensor = null;
+    let createdVariables = [];
+
+    // Step 2: Create sensor if model/brand provided
+    if (sensor_model || sensor_brand) {
+      const sensorQuery = `
+        INSERT INTO sensors (station_id, model, brand, status)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `;
+
+      const sensorResult = await client.query(sensorQuery, [
+        station.id,
+        sensor_model || null,
+        sensor_brand || null,
+        'active'
+      ]);
+
+      sensor = sensorResult.rows[0];
+
+      // Step 3: Link sensor to variables if provided
+      if (variable_ids && variable_ids.length > 0 && sensor) {
+        // Validate that all variable_ids exist
+        const variableCheckQuery = `
+          SELECT id FROM variables WHERE id = ANY($1::VARCHAR[])
+        `;
+        const validVariables = await client.query(variableCheckQuery, [variable_ids]);
+        
+        if (validVariables.rows.length !== variable_ids.length) {
+          throw new Error('One or more variable IDs are invalid');
+        }
+
+        // Insert sensor-variable relationships
+        const insertPromises = variable_ids.map(variableId => 
+          client.query(
+            `INSERT INTO sensor_variables (sensor_id, variable_id) VALUES ($1, $2) RETURNING *`,
+            [sensor.id, variableId]
+          )
+        );
+
+        const variableResults = await Promise.all(insertPromises);
+        createdVariables = variableResults.map(r => r.rows[0]);
+      }
+    }
+
+    await client.query('COMMIT');
+
+    // Return station with associated sensor and variables info
+    res.status(201).json({
+      ...station,
+      sensor: sensor,
+      variables: createdVariables
+    });
   } catch (error) {
+    await client.query('ROLLBACK');
     next(error);
+  } finally {
+    client.release();
   }
 };
 
@@ -167,12 +251,12 @@ export const createStation = async (req, res, next) => {
 export const updateStation = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, latitude, longitude, status } = req.body;
+    const { name, latitude, longitude, status, technician_id } = req.body;
 
     const query = `
       UPDATE stations
-      SET name = $1, latitude = $2, longitude = $3, status = $4
-      WHERE id = $5
+      SET name = $1, latitude = $2, longitude = $3, status = $4, technician_id = $5
+      WHERE id = $6
       RETURNING *
     `;
 
@@ -181,6 +265,7 @@ export const updateStation = async (req, res, next) => {
       latitude,
       longitude,
       status,
+      technician_id || null,
       id,
     ]);
 
