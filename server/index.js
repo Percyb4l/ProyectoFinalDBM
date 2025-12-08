@@ -1,20 +1,30 @@
+/**
+ * @fileoverview Main Server Entry Point
+ * 
+ * This is the main entry point for the VriSA backend server.
+ * Configures Express application, registers middleware, and sets up API routes.
+ * 
+ * @module server/index
+ */
+
 // index.js
 // =======================================================
-// Punto de entrada del backend VRISA (Express + Postgres)
+// VriSA Backend Entry Point (Express + PostgreSQL)
 // =======================================================
-import dotenv from "dotenv"; // <--- 1. IMPORTAR DOTENV
+
+// Load environment variables from .env file first
+import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import "./config/db.js"; // solo para inicializar conexión y logs
-
+// Import database config to initialize connection and log status
+import "./config/db.js";
 
 // Middlewares
 import { errorHandler } from "./middleware/errorHandler.js";
 
-
-// Rutas
+// Route modules
 import stationRoutes from "./routes/stationRoutes.js";
 import measurementRoutes from "./routes/measurementRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
@@ -26,21 +36,33 @@ import thresholdRoutes from "./routes/thresholdRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
 import variableRoutes from "./routes/variableRoutes.js";
 
-
+/**
+ * Express application instance
+ * @type {express.Application}
+ */
 const app = express();
 
-
-// Middlewares globales
+// Global middleware configuration
+// CORS allows cross-origin requests from frontend
 app.use(cors());
+// JSON parser for request bodies
 app.use(express.json());
 
-// Ruta raíz para verificar estado
+/**
+ * Health check route
+ * 
+ * Simple endpoint to verify server is running.
+ * Useful for monitoring and deployment verification.
+ * 
+ * @route GET /
+ * @returns {string} Server status message
+ */
 app.get("/", (req, res) => {
     res.send("Backend VRISA is running!");
 });
 
-
-// Rutas API (prefijo /api/...)
+// API Routes (all prefixed with /api/...)
+// Register route modules with their base paths
 app.use("/api/auth", authRoutes);
 app.use("/api/stations", stationRoutes);
 app.use("/api/measurements", measurementRoutes);
@@ -52,12 +74,22 @@ app.use("/api/thresholds", thresholdRoutes);
 app.use("/api/integrations", integrationRoutes);
 app.use("/api/variables", variableRoutes);
 
-
-// Middleware de manejo global de errores (SIEMPRE al final)
+// Global error handler middleware (MUST be registered last)
+// Catches all errors from route handlers and sends standardized responses
 app.use(errorHandler);
 
-
+/**
+ * Server port configuration
+ * Uses PORT environment variable or defaults to 3001
+ * @type {number}
+ */
 const PORT = process.env.PORT || 3001;
+
+/**
+ * Start the Express server
+ * 
+ * Listens on the configured port and logs startup message.
+ */
 app.listen(PORT, () => {
     console.log(`🚀 Backend VRISA corriendo en puerto ${PORT}`);
 });

@@ -1,18 +1,49 @@
+/**
+ * @fileoverview Stations Management Page Component
+ * 
+ * This component provides a comprehensive interface for managing environmental monitoring stations.
+ * Features include CRUD operations, real-time search, and multi-criteria filtering.
+ * 
+ * @module pages/admin/StationsPage
+ * @requires react
+ * @requires react-router-dom
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import api from "../../services/api";
 
+/**
+ * StationsPage Component
+ * 
+ * Main component for station management. Provides:
+ * - Station listing with sortable columns
+ * - Real-time search by station name
+ * - Filtering by status and institution
+ * - Create, edit, and delete operations
+ * - Modal-based form for station creation/editing
+ * 
+ * @component
+ * @returns {JSX.Element} Rendered station management interface
+ */
 const StationsPage = () => {
+  // State for station data and loading status
   const [stations, setStations] = useState([]);
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Modal and form state
   const [showModal, setShowModal] = useState(false);
   const [editingStation, setEditingStation] = useState(null);
+  
+  // Filter state - these trigger automatic reload when changed
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterInstitution, setFilterInstitution] = useState("");
+  
+  // Form data state for create/edit operations
   const [formData, setFormData] = useState({
     name: "",
     latitude: "",
@@ -21,6 +52,18 @@ const StationsPage = () => {
     institution_id: null
   });
 
+  /**
+   * Table column definitions for DataTable component
+   * 
+   * Defines which fields to display, their labels, sortability, and custom rendering.
+   * The institution_name column uses a fallback display for stations without institutions.
+   * 
+   * @type {Array<Object>}
+   * @property {string} key - Field name in station object
+   * @property {string} label - Display label for column header
+   * @property {boolean} sortable - Whether column supports sorting
+   * @property {Function} [render] - Optional custom render function for cell content
+   */
   const columns = [
     { key: "id", label: "ID", sortable: true },
     { key: "name", label: "Nombre", sortable: true },
@@ -28,6 +71,7 @@ const StationsPage = () => {
       key: "institution_name", 
       label: "Institución", 
       sortable: true,
+      // Display fallback text if station has no associated institution
       render: (value) => value || "Sin institución"
     },
     { key: "latitude", label: "Latitud", sortable: true },
@@ -36,6 +80,7 @@ const StationsPage = () => {
       key: "status",
       label: "Estado",
       sortable: true,
+      // Render status badge with localized Spanish text
       render: (value) => (
         <span className={`status-badge status-${value}`}>
           {value === "active" ? "Activa" : value === "inactive" ? "Inactiva" : "Mantenimiento"}
@@ -44,15 +89,37 @@ const StationsPage = () => {
     }
   ];
 
+  /**
+   * Initial data loading effect
+   * 
+   * Loads institutions and stations when component mounts.
+   * Institutions are needed for the filter dropdown and form select.
+   */
   useEffect(() => {
     loadInstitutions();
     loadStations();
   }, []);
 
+  /**
+   * Filter change effect
+   * 
+   * Automatically reloads stations whenever search term, status filter, or institution filter changes.
+   * This provides real-time filtering as the user types or selects options.
+   */
   useEffect(() => {
     loadStations();
   }, [searchTerm, filterStatus, filterInstitution]);
 
+  /**
+   * Loads all institutions from the API
+   * 
+   * Fetches institution list for use in filter dropdown and station form.
+   * Errors are logged but don't block the UI.
+   * 
+   * @async
+   * @function loadInstitutions
+   * @returns {Promise<void>}
+   */
   const loadInstitutions = async () => {
     try {
       const res = await api.get("/institutions");
@@ -62,10 +129,22 @@ const StationsPage = () => {
     }
   };
 
+  /**
+   * Loads stations from the API with optional filtering
+   * 
+   * Constructs query parameters based on current filter state and fetches matching stations.
+   * Supports search by name (case-insensitive), filtering by status, and filtering by institution.
+   * 
+   * @async
+   * @function loadStations
+   * @returns {Promise<void>}
+   */
   const loadStations = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
+      
+      // Build query parameters only for non-empty filter values
       if (searchTerm) params.append("search", searchTerm);
       if (filterStatus) params.append("status", filterStatus);
       if (filterInstitution) params.append("institution_id", filterInstitution);
@@ -82,6 +161,19 @@ const StationsPage = () => {
     }
   };
 
+  /**
+   * Handles edit button click for a station
+   * 
+   * Populates the form with the selected station's data and opens the modal for editing.
+   * 
+   * @param {Object} station - Station object to edit
+   * @param {number} station.id - Station ID
+   * @param {string} station.name - Station name
+   * @param {number} station.latitude - Latitude coordinate
+   * @param {number} station.longitude - Longitude coordinate
+   * @param {string} station.status - Station status
+   * @param {number|null} station.institution_id - Associated institution ID
+   */
   const handleEdit = (station) => {
     setEditingStation(station);
     setFormData({
@@ -94,11 +186,24 @@ const StationsPage = () => {
     setShowModal(true);
   };
 
+  /**
+   * Handles station deletion
+   * 
+   * Prompts user for confirmation before deleting. On success, removes the station
+   * from the local state to update the UI immediately.
+   * 
+   * @async
+   * @param {Object} station - Station object to delete
+   * @param {number} station.id - Station ID
+   * @param {string} station.name - Station name (for confirmation message)
+   * @returns {Promise<void>}
+   */
   const handleDelete = async (station) => {
     if (!confirm(`¿Eliminar la estación "${station.name}"?`)) return;
 
     try {
       await api.delete(`/stations/${station.id}`);
+      // Optimistic update: remove from local state immediately
       setStations(stations.filter(s => s.id !== station.id));
     } catch (error) {
       console.error("Error deleting station:", error);
@@ -106,10 +211,21 @@ const StationsPage = () => {
     }
   };
 
+  /**
+   * Handles form submission for create/edit operations
+   * 
+   * Validates and submits station data. Converts latitude/longitude strings to numbers.
+   * Updates local state optimistically and reloads data to ensure consistency with server.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      // Convert coordinate strings to numbers for API
       const payload = {
         ...formData,
         latitude: parseFloat(formData.latitude),
@@ -117,21 +233,29 @@ const StationsPage = () => {
       };
 
       if (editingStation) {
+        // Update existing station
         const res = await api.put(`/stations/${editingStation.id}`, payload);
         setStations(stations.map(s => s.id === editingStation.id ? res.data : s));
       } else {
+        // Create new station
         const res = await api.post("/stations", payload);
         setStations([...stations, res.data]);
       }
 
       handleCloseModal();
-      loadStations(); // Reload to refresh filters
+      // Reload to ensure filters are applied and data is fresh
+      loadStations();
     } catch (error) {
       console.error("Error saving station:", error);
       alert("Error al guardar estación");
     }
   };
 
+  /**
+   * Closes the modal and resets form state
+   * 
+   * Clears editing state and resets form data to default values.
+   */
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingStation(null);

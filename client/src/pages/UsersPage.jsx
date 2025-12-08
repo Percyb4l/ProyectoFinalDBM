@@ -1,17 +1,46 @@
+/**
+ * @fileoverview Users Management Page Component
+ * 
+ * Provides interface for managing system users.
+ * Features include listing users, creating new users, and deleting users.
+ * 
+ * @module pages/UsersPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import { getUsers, deleteUser } from "../../services/userService";
 import UserModal from "../../components/UserModal";
 
+/**
+ * UsersPage Component
+ * 
+ * Manages user accounts with create and delete operations.
+ * Uses a modal component for user creation.
+ * 
+ * @component
+ * @returns {JSX.Element} User management interface
+ */
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
+  /**
+   * Loads all users from the API
+   * 
+   * @async
+   * @function loadUsers
+   * @returns {Promise<void>}
+   */
   const loadUsers = async () => {
     const res = await getUsers();
     setUsers(res.data);
   };
 
+  /**
+   * Effect: Load users on component mount
+   */
   useEffect(() => {
     loadUsers();
   }, []);
@@ -55,6 +84,7 @@ const UsersPage = () => {
                     className="admin-btn-danger"
                     style={{ marginLeft: "6px" }}
                     onClick={() => {
+                      // Delete user and refresh list
                       deleteUser(u.id).then(loadUsers);
                     }}
                   >
@@ -67,6 +97,7 @@ const UsersPage = () => {
         </table>
       </div>
 
+      {/* User creation modal */}
       {openModal && (
         <UserModal
           close={() => setOpenModal(false)}

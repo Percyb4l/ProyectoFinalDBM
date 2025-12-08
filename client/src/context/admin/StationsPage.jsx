@@ -1,13 +1,39 @@
+/**
+ * @fileoverview Stations Page Component (Context Version)
+ * 
+ * Alternative implementation of stations management page located in context/admin.
+ * Uses StationModal component for station creation.
+ * Note: This may be a duplicate of pages/admin/StationsPage.jsx
+ * 
+ * @module context/admin/StationsPage
+ * @requires react
+ */
+
 // src/pages/admin/StationsPage.jsx
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import { getStations } from "../../services/stationService";
 import StationModal from "../../components/StationModal";
 
+/**
+ * StationsPage Component
+ * 
+ * Displays list of stations with ability to create new ones via modal.
+ * 
+ * @component
+ * @returns {JSX.Element} Stations listing interface
+ */
 const StationsPage = () => {
   const [stations, setStations] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
+  /**
+   * Loads all stations from the API
+   * 
+   * @async
+   * @function loadStations
+   * @returns {Promise<void>}
+   */
   const loadStations = async () => {
     try {
       const res = await getStations();
@@ -17,6 +43,9 @@ const StationsPage = () => {
     }
   };
 
+  /**
+   * Effect: Load stations on component mount
+   */
   useEffect(() => {
     loadStations();
   }, []);
@@ -60,6 +89,7 @@ const StationsPage = () => {
         </table>
       </div>
 
+      {/* Station creation modal */}
       {openModal && (
         <StationModal close={() => setOpenModal(false)} refresh={loadStations} />
       )}

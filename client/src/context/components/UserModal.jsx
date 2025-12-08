@@ -1,19 +1,56 @@
+/**
+ * @fileoverview User Modal Component
+ * 
+ * Modal component for creating new users.
+ * Provides a form with fields for name, email, password, and role selection.
+ * 
+ * @module context/components/UserModal
+ * @requires react
+ */
+
 import React, { useState } from "react";
 import { createUser } from "../services/userService";
 
+/**
+ * UserModal Component
+ * 
+ * Displays a modal form for creating new user accounts.
+ * Supports multiple user roles including admin, operator, researcher, and citizen.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.close - Callback to close the modal
+ * @param {Function} props.refresh - Callback to refresh user list after creation
+ * 
+ * @component
+ * @returns {JSX.Element} User creation modal
+ */
 const UserModal = ({ close, refresh }) => {
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: "operador_estacion",
+    role: "operador_estacion", // Default role
   });
 
+  /**
+   * Handles form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  /**
+   * Handles form submission
+   * 
+   * Creates a new user and refreshes the user list.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 

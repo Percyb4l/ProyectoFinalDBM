@@ -1,9 +1,28 @@
+/**
+ * @fileoverview Institutions Management Page Component
+ * 
+ * Provides interface for managing institutions (organizations that own stations).
+ * Features include listing institutions, creating new ones, and verifying institutions.
+ * 
+ * @module pages/admin/InstitutionsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import api from "../../services/api";
 
+/**
+ * InstitutionsPage Component
+ * 
+ * Manages institution records with create and verify operations.
+ * Institutions can be customized with branding colors and logos.
+ * 
+ * @component
+ * @returns {JSX.Element} Institution management interface
+ */
 const InstitutionsPage = () => {
     const [institutions, setInstitutions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,6 +34,11 @@ const InstitutionsPage = () => {
         color_secondary: "#8b5cf6"
     });
 
+    /**
+     * Table column definitions
+     * 
+     * @type {Array<Object>}
+     */
     const columns = [
         { key: "id", label: "ID", sortable: true },
         { key: "name", label: "Nombre", sortable: true },
@@ -23,6 +47,7 @@ const InstitutionsPage = () => {
             key: "is_verified",
             label: "Verificada",
             sortable: true,
+            // Render verification status badge
             render: (value) => (
                 <span className={`status-badge ${value ? 'status-verified' : 'status-pending'}`}>
                     {value ? "✓ Verificada" : "Pendiente"}
@@ -31,10 +56,20 @@ const InstitutionsPage = () => {
         }
     ];
 
+    /**
+     * Effect: Load institutions on component mount
+     */
     useEffect(() => {
         loadInstitutions();
     }, []);
 
+    /**
+     * Loads all institutions from the API
+     * 
+     * @async
+     * @function loadInstitutions
+     * @returns {Promise<void>}
+     */
     const loadInstitutions = async () => {
         try {
             setLoading(true);
@@ -48,9 +83,20 @@ const InstitutionsPage = () => {
         }
     };
 
+    /**
+     * Verifies an institution
+     * 
+     * Marks an institution as verified, indicating it has been reviewed and approved.
+     * 
+     * @async
+     * @param {Object} institution - Institution object to verify
+     * @param {number} institution.id - Institution ID
+     * @returns {Promise<void>}
+     */
     const handleVerify = async (institution) => {
         try {
             await api.put(`/institutions/${institution.id}/verify`);
+            // Optimistic update: mark as verified in local state
             setInstitutions(institutions.map(i =>
                 i.id === institution.id ? { ...i, is_verified: true } : i
             ));
@@ -60,6 +106,13 @@ const InstitutionsPage = () => {
         }
     };
 
+    /**
+     * Handles form submission for creating a new institution
+     * 
+     * @async
+     * @param {Event} e - Form submit event
+     * @returns {Promise<void>}
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -73,6 +126,9 @@ const InstitutionsPage = () => {
         }
     };
 
+    /**
+     * Closes the modal and resets form state
+     */
     const handleCloseModal = () => {
         setShowModal(false);
         setFormData({

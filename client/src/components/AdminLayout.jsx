@@ -1,12 +1,40 @@
+/**
+ * @fileoverview Admin Layout Component (Components Version)
+ * 
+ * Layout wrapper for admin pages with sidebar navigation and user info.
+ * Provides consistent structure for all admin interface pages.
+ * 
+ * @module components/AdminLayout
+ * @requires react
+ * @requires react-router-dom
+ */
+
 import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import "./AdminLayout.css";
 
+/**
+ * AdminLayout Component
+ * 
+ * Wraps admin pages with a sidebar navigation menu and user information.
+ * Handles logout functionality and provides navigation links to admin sections.
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Page content to render in main area
+ * 
+ * @component
+ * @returns {JSX.Element} Admin layout with sidebar and content area
+ */
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * Handles user logout
+   * 
+   * Clears authentication state and redirects to login page.
+   */
   const handleLogout = () => {
     logout();
     navigate("/login");

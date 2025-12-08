@@ -1,26 +1,61 @@
+/**
+ * @fileoverview Authentication Controller
+ * 
+ * This module handles user authentication operations including login and registration.
+ * Uses bcrypt for password hashing and JWT for token generation.
+ * 
+ * @module controllers/authController
+ */
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/db.js";
 
-// ===============================
-// LOGIN
-// ===============================
+/**
+ * Authenticates a user and returns a JWT token
+ * 
+ * Validates user credentials by checking email and password against the database.
+ * On successful authentication, generates a JWT token containing user ID and role.
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User email address
+ * @param {string} req.body.password - User password (plain text)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * 
+ * @returns {Promise<void>} Sends JSON response with token and user data, or error message
+ * 
+ * @throws {Error} Forwards database errors to error handling middleware
+ * 
+ * @example
+ * POST /api/auth/login
+ * {
+ *   "email": "user@example.com",
+ *   "password": "password123"
+ * }
+ */
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    // Query user by email - email is unique in the database
     const query = `SELECT * FROM users WHERE email = $1`;
     const result = await pool.query(query, [email]);
 
+    // Return 401 if user not found (don't reveal if email exists)
     if (result.rows.length === 0)
       return res.status(401).json({ error: "Usuario no encontrado" });
 
     const user = result.rows[0];
 
+    // Compare provided password with hashed password in database
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword)
       return res.status(401).json({ error: "Contraseña incorrecta" });
 
+    // Generate JWT token with user ID and role
+    // Token expiration is set via JWT_EXPIRES environment variable
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -37,13 +72,41 @@ export const login = async (req, res, next) => {
   }
 };
 
-// ===============================
-// REGISTER (solo si lo usas)
-// ===============================
+/**
+ * Registers a new user in the system
+ * 
+ * Creates a new user account with hashed password. Supports optional institution
+ * association for institution-specific users.
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.name - User's full name
+ * @param {string} req.body.email - User's email address (must be unique)
+ * @param {string} req.body.password - User's password (will be hashed)
+ * @param {string} req.body.role - User role (e.g., 'admin_general', 'admin_institucion', 'operador_estacion')
+ * @param {number} [req.body.institution_id] - Optional institution ID for institution-specific users
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * 
+ * @returns {Promise<void>} Sends HTTP 201 with created user object (password excluded)
+ * 
+ * @throws {Error} Forwards database constraint violations (duplicate email) and errors to error handling middleware
+ * 
+ * @example
+ * POST /api/auth/register
+ * {
+ *   "name": "John Doe",
+ *   "email": "john@example.com",
+ *   "password": "securePassword123",
+ *   "role": "admin_institucion",
+ *   "institution_id": 1
+ * }
+ */
 export const register = async (req, res, next) => {
   try {
     const { name, email, password, role, institution_id } = req.body;
 
+    // Hash password with bcrypt (10 rounds for security/performance balance)
     const hashedPass = await bcrypt.hash(password, 10);
 
     const query = `
@@ -57,7 +120,7 @@ export const register = async (req, res, next) => {
       email,
       hashedPass,
       role,
-      institution_id || null,
+      institution_id || null, // Allow null for users not associated with institutions
     ]);
 
     res.status(201).json(result.rows[0]);

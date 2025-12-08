@@ -1,9 +1,28 @@
+/**
+ * @fileoverview Sensors Management Page Component
+ * 
+ * Provides interface for managing sensor devices installed at monitoring stations.
+ * Features include station-based filtering, sensor creation, and status management.
+ * 
+ * @module pages/admin/SensorsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import api from "../../services/api";
 
+/**
+ * SensorsPage Component
+ * 
+ * Manages sensor devices with station-based filtering and creation capabilities.
+ * Sensors are associated with stations and can have different statuses.
+ * 
+ * @component
+ * @returns {JSX.Element} Sensor management interface
+ */
 const SensorsPage = () => {
     const [sensors, setSensors] = useState([]);
     const [stations, setStations] = useState([]);
@@ -17,6 +36,11 @@ const SensorsPage = () => {
         status: "active"
     });
 
+    /**
+     * Table column definitions
+     * 
+     * @type {Array<Object>}
+     */
     const columns = [
         { key: "id", label: "ID", sortable: true },
         { key: "station_id", label: "ID Estación", sortable: true },
@@ -34,10 +58,21 @@ const SensorsPage = () => {
         }
     ];
 
+    /**
+     * Effect: Load stations on component mount
+     * 
+     * Stations are needed for the filter dropdown and form select.
+     */
     useEffect(() => {
         loadStations();
     }, []);
 
+    /**
+     * Effect: Load sensors when station filter changes
+     * 
+     * Automatically loads sensors for the selected station.
+     * Clears sensor list if no station is selected.
+     */
     useEffect(() => {
         if (selectedStation) {
             loadSensors(selectedStation);
@@ -46,6 +81,13 @@ const SensorsPage = () => {
         }
     }, [selectedStation]);
 
+    /**
+     * Loads all stations from the API
+     * 
+     * @async
+     * @function loadStations
+     * @returns {Promise<void>}
+     */
     const loadStations = async () => {
         try {
             const res = await api.get("/stations");
@@ -55,6 +97,13 @@ const SensorsPage = () => {
         }
     };
 
+    /**
+     * Loads sensors for a specific station
+     * 
+     * @async
+     * @param {string|number} stationId - Station ID to load sensors for
+     * @returns {Promise<void>}
+     */
     const loadSensors = async (stationId) => {
         try {
             setLoading(true);
@@ -68,11 +117,21 @@ const SensorsPage = () => {
         }
     };
 
+    /**
+     * Handles form submission for creating a new sensor
+     * 
+     * Creates sensor and updates local state if it belongs to the currently selected station.
+     * 
+     * @async
+     * @param {Event} e - Form submit event
+     * @returns {Promise<void>}
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
             const res = await api.post("/sensors", formData);
+            // Only add to list if it matches the current filter
             if (selectedStation === formData.station_id.toString()) {
                 setSensors([...sensors, res.data]);
             }
@@ -83,6 +142,9 @@ const SensorsPage = () => {
         }
     };
 
+    /**
+     * Closes the modal and resets form state
+     */
     const handleCloseModal = () => {
         setShowModal(false);
         setFormData({

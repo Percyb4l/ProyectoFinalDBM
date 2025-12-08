@@ -1,8 +1,28 @@
+/**
+ * @fileoverview Admin Dashboard Page Component
+ * 
+ * Main dashboard page for administrators showing system statistics and quick access links.
+ * Displays overview metrics for stations, institutions, sensors, and alerts.
+ * 
+ * @module pages/admin/AdminDashboard
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import api from "../../services/api";
 
+/**
+ * AdminDashboard Component
+ * 
+ * Displays system-wide statistics and provides quick navigation to key admin functions.
+ * Shows counts for stations, institutions, sensors, and alerts with visual cards.
+ * 
+ * @component
+ * @returns {JSX.Element} Admin dashboard interface
+ */
 const AdminDashboard = () => {
+  // Statistics state
   const [stats, setStats] = useState({
     stations: 0,
     institutions: 0,
@@ -12,13 +32,29 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Effect: Load statistics on component mount
+   * 
+   * Fetches data from multiple endpoints in parallel for better performance.
+   */
   useEffect(() => {
     loadStats();
   }, []);
 
+  /**
+   * Loads dashboard statistics from the API
+   * 
+   * Fetches counts for stations, institutions, and alerts in parallel.
+   * Calculates active alerts count from the alerts data.
+   * 
+   * @async
+   * @function loadStats
+   * @returns {Promise<void>}
+   */
   const loadStats = async () => {
     try {
       setLoading(true);
+      // Fetch multiple endpoints in parallel for better performance
       const [stationsRes, institutionsRes, alertsRes] = await Promise.all([
         api.get("/stations"),
         api.get("/institutions"),
@@ -28,8 +64,9 @@ const AdminDashboard = () => {
       setStats({
         stations: stationsRes.data.length,
         institutions: institutionsRes.data.length,
-        sensors: 0, // Would need to aggregate from all stations
+        sensors: 0, // TODO: Would need to aggregate from all stations
         alerts: alertsRes.data.length,
+        // Count unresolved alerts for active alerts metric
         activeAlerts: alertsRes.data.filter(a => !a.is_resolved).length
       });
     } catch (error) {
@@ -39,6 +76,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // Show loading state while fetching statistics
   if (loading) {
     return (
       <AdminLayout>
@@ -52,6 +90,7 @@ const AdminDashboard = () => {
       <h1 className="dashboard-title">Dashboard Administrativo</h1>
       <p className="dashboard-subtitle">Bienvenido al panel de administración de VriSA</p>
 
+      {/* Statistics cards grid */}
       <div className="stats-grid">
         <div className="stat-card stat-primary">
           <div className="stat-icon">🏢</div>
@@ -86,6 +125,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Quick access links section */}
       <div className="info-section">
         <h2>Acceso Rápido</h2>
         <div className="quick-links">

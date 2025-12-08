@@ -1,15 +1,47 @@
+/**
+ * @fileoverview Login Page Component
+ * 
+ * Public login page for user authentication.
+ * Handles user login and redirects to admin dashboard on success.
+ * 
+ * @module pages/Login
+ * @requires react
+ * @requires react-router-dom
+ */
+
 // src/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+/**
+ * Login Component
+ * 
+ * Provides a login form with email and password fields.
+ * Pre-fills with default admin credentials for development convenience.
+ * 
+ * @component
+ * @returns {JSX.Element} Login form interface
+ */
 const Login = () => {
+  // Form state - pre-filled with default admin credentials for development
   const [email, setEmail] = useState("admin@vrisa.com");
   const [password, setPassword] = useState("123456");
   const [error, setError] = useState("");
+  
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  /**
+   * Handles form submission
+   * 
+   * Attempts to authenticate user with provided credentials.
+   * On success, redirects to admin dashboard. On failure, displays error message.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -20,6 +52,7 @@ const Login = () => {
       return;
     }
 
+    // Redirect to admin dashboard on successful login
     navigate("/admin");
   };
 
@@ -29,6 +62,7 @@ const Login = () => {
         <h1 className="login-title">VriSA</h1>
         <p className="login-subtitle">Panel administrativo</p>
 
+        {/* Display error message if login fails */}
         {error && <div className="login-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">

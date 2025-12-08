@@ -1,9 +1,30 @@
+/**
+ * @fileoverview Admin Panel Page Component (Legacy)
+ * 
+ * Legacy admin panel component for institutional management.
+ * Provides station management functionality with inline form.
+ * Note: This appears to be an older version; consider using StationsPage instead.
+ * 
+ * @module pages/AdminPanel
+ * @requires react
+ * @requires react-router-dom
+ */
+
 // src/pages/AdminPanel.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
+/**
+ * AdminPanel Component
+ * 
+ * Legacy admin interface for managing stations within an institutional context.
+ * Features station listing and creation with a modal form.
+ * 
+ * @component
+ * @returns {JSX.Element} Admin panel interface
+ */
 const AdminPanel = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +41,11 @@ const AdminPanel = () => {
     status: "active",
   });
 
-  // Cargar estaciones al entrar
+  /**
+   * Effect: Load stations on component mount
+   * 
+   * Fetches all stations associated with the current user's institution.
+   */
   useEffect(() => {
     const fetchStations = async () => {
       try {
@@ -36,19 +61,41 @@ const AdminPanel = () => {
     fetchStations();
   }, []);
 
+  /**
+   * Handles user logout
+   * 
+   * Clears authentication and redirects to login page.
+   */
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  /**
+   * Handles form input changes
+   * 
+   * Updates form state when input values change.
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleStationChange = (e) => {
     const { name, value } = e.target;
     setFormStation((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Handles station creation form submission
+   * 
+   * Creates a new station and adds it to the local state.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleCreateStation = async (e) => {
     e.preventDefault();
     try {
+      // Convert coordinate strings to numbers
       const payload = {
         ...formStation,
         latitude: parseFloat(formStation.latitude),
@@ -57,6 +104,7 @@ const AdminPanel = () => {
       const res = await api.post("/stations", payload);
       setStations((prev) => [...prev, res.data]);
       setShowStationForm(false);
+      // Reset form to default values
       setFormStation({
         institution_id: null,
         name: "",
@@ -94,7 +142,7 @@ const AdminPanel = () => {
         </div>
       </aside>
 
-      {/* Contenido principal */}
+      {/* Main content */}
       <main className="admin-main">
         <h1 className="admin-title">Gestión institucional</h1>
 
@@ -139,7 +187,7 @@ const AdminPanel = () => {
           )}
         </section>
 
-        {/* Modal / panel para registrar estación */}
+        {/* Modal for station registration */}
         {showStationForm && (
           <div className="modal-backdrop" onClick={() => setShowStationForm(false)}>
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>

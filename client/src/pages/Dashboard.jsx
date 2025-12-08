@@ -1,12 +1,33 @@
+/**
+ * @fileoverview Public Dashboard Page Component
+ * 
+ * Public-facing dashboard displaying environmental monitoring data.
+ * Shows air quality indicators, interactive map, filters, and historical trends.
+ * This is the landing page for unauthenticated users.
+ * 
+ * @module pages/Dashboard
+ * @requires react
+ * @requires react-router-dom
+ */
+
 // src/pages/Dashboard.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import "./Dashboard.css"; // si quieres separar estilos, o usa App.css
+import "./Dashboard.css";
 
+/**
+ * Dashboard Component
+ * 
+ * Public dashboard displaying environmental monitoring information.
+ * Currently shows placeholder content for indicators, map, filters, and charts.
+ * 
+ * @component
+ * @returns {JSX.Element} Public dashboard interface
+ */
 const Dashboard = () => {
   return (
     <div className="vrisa-layout">
-      {/* Barra superior */}
+      {/* Top navigation bar */}
       <header className="vrisa-topbar">
         <div className="vrisa-logo">VriSA</div>
         <nav className="vrisa-menu">
@@ -20,21 +41,24 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {/* Contenido principal */}
+      {/* Main content area */}
       <main className="vrisa-main">
-        {/* Tarjetas de indicadores */}
+        {/* Indicator cards showing current air quality metrics */}
         <section className="vrisa-cards-row">
           {["ICA Actual", "PM2.5", "PM10", "O3"].map((title) => (
             <div key={title} className="vrisa-card">
               <h3>{title}</h3>
+              {/* Placeholder for actual measurement value */}
               <div className="vrisa-card-value">[ ]</div>
+              {/* Progress bar indicator */}
               <div className="vrisa-card-bar" />
             </div>
           ))}
         </section>
 
+        {/* Map and filters section */}
         <section className="vrisa-grid">
-          {/* Mapa */}
+          {/* Interactive map placeholder */}
           <div className="vrisa-map">
             <div className="vrisa-map-placeholder">
               [ MAPA INTERACTIVO ]
@@ -42,7 +66,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Filtros */}
+          {/* Data filters sidebar */}
           <aside className="vrisa-filters">
             <h3>Filtros de datos</h3>
 
@@ -71,7 +95,7 @@ const Dashboard = () => {
           </aside>
         </section>
 
-        {/* Tendencias históricas */}
+        {/* Historical trends chart section */}
         <section className="vrisa-chart-section">
           <h3>Tendencias históricas</h3>
           <div className="vrisa-chart-placeholder">

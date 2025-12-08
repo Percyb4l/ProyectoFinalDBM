@@ -1,7 +1,30 @@
+/**
+ * @fileoverview Report Modal Component
+ * 
+ * Modal component for generating new reports.
+ * Allows users to specify report title, description, type, and associated station.
+ * 
+ * @module context/components/ReportModal
+ * @requires react
+ */
+
 import React, { useState, useEffect } from "react";
 import { generateReport } from "../services/reportService";
 import api from "../services/api";
 
+/**
+ * ReportModal Component
+ * 
+ * Provides a form for generating new reports with configurable options.
+ * Reports can be daily, monthly, or custom types and can be associated with specific stations.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.close - Callback to close the modal
+ * @param {Function} props.refresh - Callback to refresh report list after generation
+ * 
+ * @component
+ * @returns {JSX.Element} Report generation modal
+ */
 const ReportModal = ({ close, refresh }) => {
   const [form, setForm] = useState({
     title: "",
@@ -12,20 +35,44 @@ const ReportModal = ({ close, refresh }) => {
 
   const [stations, setStations] = useState([]);
 
+  /**
+   * Loads all stations from the API
+   * 
+   * @async
+   * @function loadStations
+   * @returns {Promise<void>}
+   */
   const loadStations = async () => {
     const res = await api.get("/stations");
     setStations(res.data);
   };
 
+  /**
+   * Effect: Load stations on component mount
+   */
   useEffect(() => {
     loadStations();
   }, []);
 
+  /**
+   * Handles form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  /**
+   * Handles form submission
+   * 
+   * Generates a new report and refreshes the report list.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 

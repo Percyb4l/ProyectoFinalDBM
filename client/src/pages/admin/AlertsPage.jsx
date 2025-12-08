@@ -1,13 +1,37 @@
+/**
+ * @fileoverview Alerts Management Page Component
+ * 
+ * Provides interface for viewing and managing environmental alerts.
+ * Features include filtering by status and severity, and resolving alerts.
+ * 
+ * @module pages/admin/AlertsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import DataTable from "../../components/DataTable";
 import api from "../../services/api";
 
+/**
+ * AlertsPage Component
+ * 
+ * Displays environmental alerts with filtering and resolution capabilities.
+ * Alerts are generated when measurement values exceed thresholds or system issues occur.
+ * 
+ * @component
+ * @returns {JSX.Element} Alerts management interface
+ */
 const AlertsPage = () => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("all");
 
+    /**
+     * Table column definitions
+     * 
+     * @type {Array<Object>}
+     */
     const columns = [
         { key: "id", label: "ID", sortable: true },
         { key: "station_id", label: "Estación", sortable: true },
@@ -17,6 +41,7 @@ const AlertsPage = () => {
             key: "severity",
             label: "Severidad",
             sortable: true,
+            // Render severity badge with color coding
             render: (value) => (
                 <span className={`severity-badge severity-${value}`}>
                     {value.toUpperCase()}
@@ -27,6 +52,7 @@ const AlertsPage = () => {
             key: "is_resolved",
             label: "Estado",
             sortable: true,
+            // Render resolution status badge
             render: (value) => (
                 <span className={`status-badge ${value ? 'status-resolved' : 'status-active'}`}>
                     {value ? "Resuelta" : "Activa"}
@@ -37,14 +63,25 @@ const AlertsPage = () => {
             key: "created_at",
             label: "Fecha",
             sortable: true,
+            // Format timestamp to Spanish locale
             render: (value) => new Date(value).toLocaleString('es-ES')
         }
     ];
 
+    /**
+     * Effect: Load alerts on component mount
+     */
     useEffect(() => {
         loadAlerts();
     }, []);
 
+    /**
+     * Loads all alerts from the API
+     * 
+     * @async
+     * @function loadAlerts
+     * @returns {Promise<void>}
+     */
     const loadAlerts = async () => {
         try {
             setLoading(true);
@@ -58,11 +95,25 @@ const AlertsPage = () => {
         }
     };
 
+    /**
+     * Resolves an alert
+     * 
+     * Marks an alert as resolved and records the resolution timestamp.
+     * Only allows resolving alerts that are not already resolved.
+     * 
+     * @async
+     * @param {Object} alert - Alert object to resolve
+     * @param {number} alert.id - Alert ID
+     * @param {boolean} alert.is_resolved - Current resolution status
+     * @returns {Promise<void>}
+     */
     const handleResolve = async (alert) => {
+        // Prevent resolving already resolved alerts
         if (alert.is_resolved) return;
 
         try {
             await api.put(`/alerts/${alert.id}/resolve`);
+            // Optimistic update: mark as resolved with current timestamp
             setAlerts(alerts.map(a =>
                 a.id === alert.id ? { ...a, is_resolved: true, resolved_at: new Date() } : a
             ));
@@ -72,10 +123,18 @@ const AlertsPage = () => {
         }
     };
 
+    /**
+     * Filters alerts based on selected filter criteria
+     * 
+     * Supports filtering by status (all, active, resolved) or by severity level.
+     * 
+     * @type {Array<Object>}
+     */
     const filteredAlerts = alerts.filter(alert => {
         if (filter === "all") return true;
         if (filter === "active") return !alert.is_resolved;
         if (filter === "resolved") return alert.is_resolved;
+        // Filter by severity level
         return alert.severity === filter;
     });
 

@@ -1,18 +1,53 @@
+/**
+ * @fileoverview Measurements Viewing Page Component
+ * 
+ * This component provides an interface for viewing and filtering environmental measurements.
+ * Features include station selection, date range filtering, variable type filtering,
+ * and formatted display of measurement data with units.
+ * 
+ * @module pages/admin/MeasurementsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import DataTable from "../../components/DataTable";
 import api from "../../services/api";
 
+/**
+ * MeasurementsPage Component
+ * 
+ * Displays environmental measurements with advanced filtering capabilities:
+ * - Station-based filtering (required)
+ * - Date range selection (start and end dates)
+ * - Variable type filtering (e.g., PM2.5, O3, NO2)
+ * - Quick filter for last 7 days
+ * - Formatted display with proper units
+ * 
+ * @component
+ * @returns {JSX.Element} Rendered measurements viewing interface
+ */
 const MeasurementsPage = () => {
+    // Data state
     const [measurements, setMeasurements] = useState([]);
     const [stations, setStations] = useState([]);
     const [variables, setVariables] = useState([]);
     const [loading, setLoading] = useState(false);
+    
+    // Filter state - changes trigger automatic reload
     const [selectedStation, setSelectedStation] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedVariable, setSelectedVariable] = useState("");
 
+    /**
+     * Table column definitions for DataTable component
+     * 
+     * Defines measurement fields to display with custom formatting for values and timestamps.
+     * The value column includes unit information from the API or fallback mapping.
+     * 
+     * @type {Array<Object>}
+     */
     const columns = [
         { key: "id", label: "ID", sortable: true },
         { key: "station_id", label: "Estación", sortable: true },
@@ -22,22 +57,34 @@ const MeasurementsPage = () => {
             key: "value",
             label: "Valor",
             sortable: true,
+            // Format value with unit - prefer API unit, fallback to hardcoded mapping
             render: (value, row) => `${value} ${row.unit || getUnit(row.variable_id)}`
         },
         {
             key: "variable_name",
             label: "Variable",
             sortable: true,
+            // Display variable name if available, otherwise show variable_id
             render: (value, row) => value || row.variable_id
         },
         {
             key: "timestamp",
             label: "Fecha/Hora",
             sortable: true,
+            // Format timestamp to Spanish locale string
             render: (value) => new Date(value).toLocaleString('es-ES')
         }
     ];
 
+    /**
+     * Maps variable IDs to their default units
+     * 
+     * Provides fallback unit mapping when API doesn't return unit information.
+     * This ensures measurements always display with appropriate units.
+     * 
+     * @param {string} variableId - Variable identifier (e.g., 'PM25', 'O3', 'NO2')
+     * @returns {string} Unit string for the variable, empty string if unknown
+     */
     const getUnit = (variableId) => {
         const units = {
             'PM25': 'µg/m³',
@@ -52,19 +99,42 @@ const MeasurementsPage = () => {
         return units[variableId] || '';
     };
 
+    /**
+     * Initial data loading effect
+     * 
+     * Loads stations and variables when component mounts.
+     * These are needed for filter dropdowns.
+     */
     useEffect(() => {
         loadStations();
         loadVariables();
     }, []);
 
+    /**
+     * Filter change effect
+     * 
+     * Automatically reloads measurements when station, date range, or variable filter changes.
+     * Clears measurements if no station is selected.
+     */
     useEffect(() => {
         if (selectedStation) {
             loadMeasurements(selectedStation);
         } else {
+            // Clear measurements when no station selected
             setMeasurements([]);
         }
     }, [selectedStation, startDate, endDate, selectedVariable]);
 
+    /**
+     * Loads all stations from the API
+     * 
+     * Fetches station list for the station filter dropdown.
+     * Errors are logged but don't block the UI.
+     * 
+     * @async
+     * @function loadStations
+     * @returns {Promise<void>}
+     */
     const loadStations = async () => {
         try {
             const res = await api.get("/stations");
@@ -74,6 +144,16 @@ const MeasurementsPage = () => {
         }
     };
 
+    /**
+     * Loads all environmental variables from the API
+     * 
+     * Fetches variable list for the variable filter dropdown.
+     * Variables define measurement types (e.g., PM2.5, O3, temperature).
+     * 
+     * @async
+     * @function loadVariables
+     * @returns {Promise<void>}
+     */
     const loadVariables = async () => {
         try {
             const res = await api.get("/variables");
@@ -83,10 +163,22 @@ const MeasurementsPage = () => {
         }
     };
 
+    /**
+     * Loads measurements for a specific station with optional filters
+     * 
+     * Constructs API request with query parameters for date range and variable filtering.
+     * Results are ordered by timestamp descending (most recent first).
+     * 
+     * @async
+     * @param {string|number} stationId - ID of the station to load measurements for
+     * @returns {Promise<void>}
+     */
     const loadMeasurements = async (stationId) => {
         try {
             setLoading(true);
             const params = new URLSearchParams();
+            
+            // Build query parameters only for non-empty filter values
             if (startDate) params.append("startDate", startDate);
             if (endDate) params.append("endDate", endDate);
             if (selectedVariable) params.append("variable_id", selectedVariable);
@@ -97,23 +189,44 @@ const MeasurementsPage = () => {
             setMeasurements(res.data);
         } catch (error) {
             console.error("Error loading measurements:", error);
+            // Clear measurements on error to show empty state
             setMeasurements([]);
         } finally {
             setLoading(false);
         }
     };
 
+    /**
+     * Clears all date and variable filters
+     * 
+     * Resets filter state to empty values, which triggers automatic reload
+     * with only the station filter applied.
+     */
     const handleClearFilters = () => {
         setStartDate("");
         setEndDate("");
         setSelectedVariable("");
     };
 
+    /**
+     * Gets today's date in ISO format (YYYY-MM-DD)
+     * 
+     * Used as maximum date for date inputs to prevent selecting future dates.
+     * 
+     * @returns {string} Today's date in ISO format
+     */
     const getTodayDate = () => {
         const today = new Date();
         return today.toISOString().split('T')[0];
     };
 
+    /**
+     * Gets date from 7 days ago in ISO format (YYYY-MM-DD)
+     * 
+     * Used for the "Last 7 days" quick filter button.
+     * 
+     * @returns {string} Date from 7 days ago in ISO format
+     */
     const getWeekAgoDate = () => {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
@@ -165,6 +278,7 @@ const MeasurementsPage = () => {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
+                        // Prevent selecting dates after end date or in the future
                         max={endDate || getTodayDate()}
                         className="date-input"
                     />
@@ -176,6 +290,7 @@ const MeasurementsPage = () => {
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
+                        // Prevent selecting dates before start date or in the future
                         min={startDate}
                         max={getTodayDate()}
                         className="date-input"
@@ -186,6 +301,7 @@ const MeasurementsPage = () => {
                     <button
                         className="btn-secondary"
                         onClick={() => {
+                            // Quick filter: set date range to last 7 days
                             setStartDate(getWeekAgoDate());
                             setEndDate(getTodayDate());
                         }}

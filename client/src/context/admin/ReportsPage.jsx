@@ -1,12 +1,38 @@
+/**
+ * @fileoverview Reports Page Component
+ * 
+ * Provides interface for viewing and managing generated reports.
+ * Features include listing reports, generating new ones, and downloading report files.
+ * 
+ * @module context/admin/ReportsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import { getReports, downloadReport } from "../../services/reportService";
 import ReportModal from "../../components/ReportModal";
 
+/**
+ * ReportsPage Component
+ * 
+ * Displays generated reports in a table with download functionality.
+ * Allows users to generate new reports via modal.
+ * 
+ * @component
+ * @returns {JSX.Element} Reports management interface
+ */
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
+  /**
+   * Loads all reports from the API
+   * 
+   * @async
+   * @function loadReports
+   * @returns {Promise<void>}
+   */
   const loadReports = async () => {
     try {
       const res = await getReports();
@@ -16,24 +42,38 @@ const ReportsPage = () => {
     }
   };
 
+  /**
+   * Handles report file download
+   * 
+   * Downloads the report file as a blob and triggers browser download.
+   * 
+   * @async
+   * @param {string} filePath - Path to the report file
+   * @returns {Promise<void>}
+   */
   const handleDownload = async (filePath) => {
     try {
       const res = await downloadReport(filePath);
 
+      // Create blob and download link
       const blob = new Blob([res.data]);
       const url = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
       link.href = url;
-      link.download = filePath.split("/").pop();
+      link.download = filePath.split("/").pop(); // Extract filename
       link.click();
 
+      // Clean up
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Error descargando archivo:", err);
     }
   };
 
+  /**
+   * Effect: Load reports on component mount
+   */
   useEffect(() => {
     loadReports();
   }, []);
@@ -68,6 +108,7 @@ const ReportsPage = () => {
                 <td>{r.id}</td>
                 <td>{r.title}</td>
                 <td>{r.report_type}</td>
+                {/* Format date to show only date portion */}
                 <td>{r.created_at?.substring(0, 10)}</td>
                 <td>{r.file_path || "No generado"}</td>
 
@@ -89,6 +130,7 @@ const ReportsPage = () => {
         </table>
       </div>
 
+      {/* Report generation modal */}
       {openModal && (
         <ReportModal close={() => setOpenModal(false)} refresh={loadReports} />
       )}

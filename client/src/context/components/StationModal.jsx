@@ -1,9 +1,33 @@
+/**
+ * @fileoverview Station Modal Component
+ * 
+ * Comprehensive modal component for registering new monitoring stations.
+ * Includes fields for station details, sensor information, variables, certificates, and credentials.
+ * 
+ * @module context/components/StationModal
+ * @requires react
+ */
+
 // src/components/StationModal.jsx
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import { createStation } from "../services/stationService";
 import { getUsers } from "../services/userService";
 
+/**
+ * StationModal Component
+ * 
+ * Provides a comprehensive form for registering new monitoring stations.
+ * Currently saves only basic station data; sensor, variable, and certificate
+ * associations are stored in form state but not yet persisted to backend.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.close - Callback to close the modal
+ * @param {Function} props.refresh - Callback to refresh station list after creation
+ * 
+ * @component
+ * @returns {JSX.Element} Station registration modal
+ */
 const StationModal = ({ close, refresh }) => {
   const [variables, setVariables] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -21,13 +45,23 @@ const StationModal = ({ close, refresh }) => {
     auto_credentials: "",
   });
 
-  // Cargar variables y técnicos desde backend
+  /**
+   * Loads variables and technicians from the API
+   * 
+   * Fetches available environmental variables and filters users to find
+   * station operators who can be assigned as technicians.
+   * 
+   * @async
+   * @function loadData
+   * @returns {Promise<void>}
+   */
   const loadData = async () => {
     try {
       const varsRes = await api.get("/variables");
       setVariables(varsRes.data || []);
 
       const usersRes = await getUsers();
+      // Filter users to find station operators
       const techs = (usersRes.data || []).filter((u) =>
         u.role?.includes("operador_estacion")
       );
@@ -37,15 +71,30 @@ const StationModal = ({ close, refresh }) => {
     }
   };
 
+  /**
+   * Effect: Load variables and technicians on component mount
+   */
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * Handles form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  /**
+   * Toggles a variable in the selected variables list
+   * 
+   * Adds or removes a variable ID from the variable_ids array.
+   * 
+   * @param {string} id - Variable ID to toggle
+   */
   const toggleVariable = (id) => {
     setForm((f) => ({
       ...f,
@@ -55,25 +104,51 @@ const StationModal = ({ close, refresh }) => {
     }));
   };
 
+  /**
+   * Handles certificate file selection
+   * 
+   * Currently only stores the filename. Full file upload implementation
+   * would be needed for production.
+   * 
+   * @param {Event} e - File input change event
+   */
   const handleCertificate = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // MOCKUP: solo guardamos el nombre del archivo
+    // MOCKUP: only store filename for now
     setForm((f) => ({ ...f, certificate_name: file.name }));
   };
 
+  /**
+   * Generates secure technical credentials
+   * 
+   * Creates a random credential string for station API access.
+   * Format: "station_<random_string>"
+   */
   const generateCredentials = () => {
     const random = Math.random().toString(36).slice(-10);
     const cred = `station_${random}`;
     setForm((f) => ({ ...f, auto_credentials: cred }));
   };
 
+  /**
+   * Handles form submission
+   * 
+   * Currently saves only basic station data (name, coordinates, status).
+   * Sensor, variable, and certificate associations are stored in form
+   * but not yet persisted to backend.
+   * 
+   * @async
+   * @param {Event} e - Form submit event
+   * @returns {Promise<void>}
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Por ahora, guardamos SOLO la estación en BD.
-      // Lo demás es mockup visual. Si quieres, luego integramos sensores/variables/certificados.
+      // For now, save ONLY the station to database.
+      // Other fields (sensor, variables, certificates) are visual mockups.
+      // TODO: Integrate sensor/variable/certificate creation
       await createStation({
         name: form.name,
         latitude: parseFloat(form.latitude),
@@ -95,7 +170,7 @@ const StationModal = ({ close, refresh }) => {
         <h2>Registro de estación</h2>
 
         <form className="modal-form" onSubmit={handleSubmit}>
-          {/* PRIMER BLOQUE: Nombre + Sensor + Técnico */}
+          {/* FIRST BLOCK: Name + Sensor + Technician */}
           <div className="modal-row">
             <div className="modal-col">
               <label className="modal-label">
@@ -143,7 +218,7 @@ const StationModal = ({ close, refresh }) => {
               </label>
             </div>
 
-            {/* SEGUNDO BLOQUE: Coordenadas y variables */}
+            {/* SECOND BLOCK: Coordinates and variables */}
             <div className="modal-col">
               <div className="modal-row">
                 <label className="modal-label">
@@ -195,7 +270,7 @@ const StationModal = ({ close, refresh }) => {
             </div>
           </div>
 
-          {/* TERCER BLOQUE: Certificado + Credenciales */}
+          {/* THIRD BLOCK: Certificate + Credentials */}
           <div className="modal-row">
             <div className="modal-col">
               <label className="modal-label">

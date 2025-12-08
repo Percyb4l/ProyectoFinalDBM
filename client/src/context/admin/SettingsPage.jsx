@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Settings Page Component
+ * 
+ * Provides interface for managing user profile, password, and institution settings.
+ * Different sections are visible based on user role (admin vs regular user).
+ * 
+ * @module context/admin/SettingsPage
+ * @requires react
+ */
+
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import {
@@ -9,6 +19,17 @@ import {
 } from "../../services/settingsService";
 import { useAuth } from "../../context/AuthContext";
 
+/**
+ * SettingsPage Component
+ * 
+ * Manages user settings including:
+ * - Profile information (name, email, role)
+ * - Password changes
+ * - Institution branding (for admin users)
+ * 
+ * @component
+ * @returns {JSX.Element} Settings management interface
+ */
 const SettingsPage = () => {
   const { user } = useAuth();
 
@@ -30,45 +51,94 @@ const SettingsPage = () => {
     newPass: "",
   });
 
+  /**
+   * Loads user profile and institution data
+   * 
+   * Fetches current user profile and associated institution (if user has institution_id).
+   * 
+   * @async
+   * @function loadData
+   * @returns {Promise<void>}
+   */
   const loadData = async () => {
     const profileRes = await getProfile();
     setProfile(profileRes.data);
 
+    // Load institution data if user is associated with one
     if (profileRes.data.institution_id) {
       const instRes = await getInstitution(profileRes.data.institution_id);
       setInstitution(instRes.data);
     }
   };
 
+  /**
+   * Effect: Load data on component mount
+   */
   useEffect(() => {
     loadData();
   }, []);
 
+  /**
+   * Handles profile form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfile((p) => ({ ...p, [name]: value }));
   };
 
+  /**
+   * Handles institution form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handleInstitutionChange = (e) => {
     const { name, value } = e.target;
     setInstitution((inst) => ({ ...inst, [name]: value }));
   };
 
+  /**
+   * Handles password form input changes
+   * 
+   * @param {Event} e - Input change event
+   */
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswords((p) => ({ ...p, [name]: value }));
   };
 
+  /**
+   * Saves profile changes
+   * 
+   * @async
+   * @function saveProfile
+   * @returns {Promise<void>}
+   */
   const saveProfile = async () => {
     await updateProfile(profile);
     alert("Perfil actualizado correctamente");
   };
 
+  /**
+   * Saves institution settings
+   * 
+   * @async
+   * @function saveInstitution
+   * @returns {Promise<void>}
+   */
   const saveInstitution = async () => {
     await updateInstitution(profile.institution_id, institution);
     alert("Institución actualizada");
   };
 
+  /**
+   * Saves password change
+   * 
+   * @async
+   * @function savePassword
+   * @returns {Promise<void>}
+   */
   const savePassword = async () => {
     await changePassword({
       current: passwords.current,
@@ -83,7 +153,7 @@ const SettingsPage = () => {
     <AdminLayout>
       <h1 className="admin-title">Configuración</h1>
 
-      {/* PERFIL */}
+      {/* USER PROFILE SECTION */}
       <div className="admin-section">
         <h2>Perfil de usuario</h2>
 
@@ -111,7 +181,7 @@ const SettingsPage = () => {
         </button>
       </div>
 
-      {/* CAMBIAR CONTRASEÑA */}
+      {/* PASSWORD CHANGE SECTION */}
       <div className="admin-section">
         <h2>Cambiar contraseña</h2>
 
@@ -140,7 +210,7 @@ const SettingsPage = () => {
         </button>
       </div>
 
-      {/* CONFIGURACIÓN INSTITUCIONAL */}
+      {/* INSTITUTION SETTINGS SECTION (only for admin users) */}
       {profile.role.includes("admin_institucion") ||
       profile.role.includes("admin_general") ? (
         <div className="admin-section">
