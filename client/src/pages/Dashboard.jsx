@@ -13,7 +13,11 @@
 // src/pages/Dashboard.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import ChartManager from "../components/ChartManager";
 import "./Dashboard.css";
+
+// Debug: Verify import
+console.log("Dashboard component loaded, ChartManager:", ChartManager);
 
 /**
  * Dashboard Component
@@ -25,8 +29,10 @@ import "./Dashboard.css";
  * @returns {JSX.Element} Public dashboard interface
  */
 const Dashboard = () => {
+  console.log("Dashboard component está renderizando");
+  
   return (
-    <div className="vrisa-layout">
+    <div className="vrisa-layout" style={{ minHeight: '100vh', width: '100%' }}>
       {/* Top navigation bar */}
       <header className="vrisa-topbar">
         <div className="vrisa-logo">VriSA</div>
@@ -42,7 +48,20 @@ const Dashboard = () => {
       </header>
 
       {/* Main content area */}
-      <main className="vrisa-main">
+      <main className="vrisa-main" style={{ padding: '20px', width: '100%' }}>
+        {/* Test: Verify main is rendering */}
+        <div style={{ 
+          padding: '20px', 
+          backgroundColor: 'lime', 
+          marginBottom: '20px',
+          border: '3px solid red',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          textAlign: 'center'
+        }}>
+          TEST PRINCIPAL: Si ves esto, el Dashboard se está renderizando
+        </div>
+
         {/* Indicator cards showing current air quality metrics */}
         <section className="vrisa-cards-row">
           {["ICA Actual", "PM2.5", "PM10", "O3"].map((title) => (
@@ -96,11 +115,35 @@ const Dashboard = () => {
         </section>
 
         {/* Historical trends chart section */}
-        <section className="vrisa-chart-section">
-          <h3>Tendencias históricas</h3>
-          <div className="vrisa-chart-placeholder">
-            [ GRÁFICA DE TENDENCIA ]
+        <section 
+          className="vrisa-chart-section" 
+          style={{ 
+            width: '100%', 
+            padding: '30px',
+            marginTop: '30px',
+            marginBottom: '30px',
+            display: 'block !important',
+            visibility: 'visible !important',
+            position: 'relative',
+            zIndex: 100,
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            border: '3px solid blue',
+            minHeight: '300px'
+          }}
+        >
+          {/* Test: Verify section is visible */}
+          <div style={{ 
+            padding: '20px', 
+            backgroundColor: 'yellow', 
+            marginBottom: '20px',
+            border: '3px solid red',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}>
+            TEST SECCIÓN: Si ves esto, la sección de gráficas está visible
           </div>
+          <ChartManager />
         </section>
       </main>
     </div>

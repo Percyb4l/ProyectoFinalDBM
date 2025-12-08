@@ -11,6 +11,7 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import api from "../../services/api";
+import ChartManager from "../../components/ChartManager";
 
 /**
  * AdminDashboard Component
@@ -148,6 +149,11 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Charts section */}
+      <div className="charts-section">
+        <ChartManager />
+      </div>
+
       <style jsx>{`
         .dashboard-title {
           margin: 0 0 0.5rem 0;
@@ -256,6 +262,14 @@ const AdminDashboard = () => {
 
         .link-icon {
           font-size: 1.5rem;
+        }
+
+        .charts-section {
+          margin-top: 2rem;
+          background: white;
+          border-radius: 12px;
+          padding: 1.5rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
       `}</style>
     </AdminLayout>

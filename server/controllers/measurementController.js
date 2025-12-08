@@ -251,3 +251,77 @@ export const getMeasurementsBySensor = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Retrieves historical measurements formatted for chart visualization.
+ * 
+ * Returns measurements for a specific station and variable over a specified
+ * number of days, formatted as time-series data suitable for charting libraries.
+ * Results are ordered chronologically (oldest first) for proper chart rendering.
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {number} req.query.station_id - Station ID to retrieve measurements for
+ * @param {string} req.query.variable_id - Variable ID to filter by (e.g., 'PM25', 'PM10', 'O3')
+ * @param {number} [req.query.days=7] - Number of days to retrieve (default: 7)
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * 
+ * @returns {Promise<void>} Sends JSON array of formatted measurement objects:
+ *   [{ date: '2024-01-15 08:00:00', value: 12.5, unit: 'µg/m³' }, ...]
+ * 
+ * @throws {Error} Forwards database errors to error handling middleware
+ * 
+ * @example
+ * GET /api/measurements/history?station_id=1&variable_id=PM25&days=7
+ */
+export const getMeasurementHistory = async (req, res, next) => {
+  try {
+    const { station_id, variable_id, days = 7 } = req.query;
+
+    // Validate required parameters
+    if (!station_id || !variable_id) {
+      return res.status(400).json({
+        error: "station_id y variable_id son requeridos"
+      });
+    }
+
+    // Calculate start date based on days parameter
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+
+    // Query to get measurements with variable unit information
+    const query = `
+      SELECT 
+        m.timestamp,
+        m.value,
+        v.unit,
+        v.name as variable_name
+      FROM measurements m
+      JOIN sensors s ON m.sensor_id = s.id
+      LEFT JOIN variables v ON m.variable_id = v.id
+      WHERE s.station_id = $1
+        AND m.variable_id = $2
+        AND m.timestamp >= $3
+      ORDER BY m.timestamp ASC
+    `;
+
+    const result = await pool.query(query, [
+      station_id,
+      variable_id,
+      startDate.toISOString(),
+    ]);
+
+    // Format data for chart consumption
+    const formattedData = result.rows.map((row) => ({
+      date: row.timestamp,
+      value: parseFloat(row.value),
+      unit: row.unit || '',
+      variable_name: row.variable_name || variable_id,
+    }));
+
+    res.json(formattedData);
+  } catch (error) {
+    next(error);
+  }
+};

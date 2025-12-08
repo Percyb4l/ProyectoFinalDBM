@@ -11,7 +11,8 @@ import express from "express";
 import {
   createMeasurement,
   getMeasurementsByStation,
-  getMeasurementsBySensor
+  getMeasurementsBySensor,
+  getMeasurementHistory
 } from "../controllers/measurementController.js";
 
 const router = express.Router();
@@ -34,5 +35,12 @@ router.get("/station/:id", getMeasurementsByStation);
  * Retrieves measurements for a specific sensor
  */
 router.get("/sensor/:id", getMeasurementsBySensor);
+
+/**
+ * GET /api/measurements/history
+ * Retrieves historical measurements formatted for chart visualization
+ * Query params: ?station_id=<id>&variable_id=<id>&days=<number>
+ */
+router.get("/history", getMeasurementHistory);
 
 export default router;
