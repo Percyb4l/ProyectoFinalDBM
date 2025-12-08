@@ -2,7 +2,8 @@
 // =======================================================
 // Punto de entrada del backend VRISA (Express + Postgres)
 // =======================================================
-
+import dotenv from "dotenv"; // <--- 1. IMPORTAR DOTENV
+dotenv.config();
 
 import express from "express";
 import cors from "cors";
