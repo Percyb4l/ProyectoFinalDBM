@@ -10,7 +10,7 @@
  */
 
 // src/layout/AdminLayout.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -21,6 +21,7 @@ import { useAuth } from "../context/AuthContext";
  * - Sidebar navigation with active route highlighting
  * - User information display
  * - Logout functionality
+ * - Mobile-responsive sidebar with toggle
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Page content to render in main area
@@ -32,6 +33,7 @@ const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /**
    * Handles user logout
@@ -42,6 +44,38 @@ const AdminLayout = ({ children }) => {
     logout();
     navigate("/login");
   };
+
+  /**
+   * Toggles mobile menu visibility
+   */
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  /**
+   * Closes mobile menu when route changes
+   */
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  /**
+   * Closes mobile menu when clicking outside on mobile
+   */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuOpen && window.innerWidth < 768) {
+        const sidebar = document.querySelector('.admin-sidebar');
+        const toggle = document.querySelector('.admin-menu-toggle');
+        if (sidebar && !sidebar.contains(event.target) && toggle && !toggle.contains(event.target)) {
+          setMobileMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen]);
 
   /**
    * Navigation menu items configuration
@@ -66,8 +100,18 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="admin-layout">
+      {/* Mobile menu toggle button */}
+      <button 
+        className="admin-menu-toggle"
+        onClick={toggleMobileMenu}
+        aria-label="Toggle menu"
+        aria-expanded={mobileMenuOpen}
+      >
+        {mobileMenuOpen ? '✕' : '☰'}
+      </button>
+
       {/* Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="admin-logo">VriSA</div>
 
         <nav className="admin-menu">

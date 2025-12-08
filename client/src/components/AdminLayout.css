@@ -1,9 +1,11 @@
 /* ===========================
    LAYOUT PRINCIPAL DEL PANEL
+   Mobile-First Responsive Design
    =========================== */
 
 .admin-layout {
   display: flex;
+  flex-direction: column;
   width: 100%;
   min-height: 100vh;
   background: var(--bg-secondary);
@@ -11,27 +13,83 @@
 }
 
 /* ---------------------------
-   SIDEBAR
+   SIDEBAR - Mobile First
    --------------------------- */
 
 .admin-sidebar {
-  width: 280px;
+  width: 100%;
   background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark-secondary) 100%);
   color: var(--text-light);
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md);
   box-shadow: var(--shadow-lg);
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  position: relative;
+  z-index: 100;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+/* Mobile: Sidebar is hidden by default, can be toggled */
+.admin-sidebar.mobile-open {
+  max-height: 100vh;
+  padding: var(--spacing-md);
+}
+
+/* Tablet and up: Sidebar is always visible */
+@media (min-width: 768px) {
+  .admin-layout {
+    flex-direction: row;
+  }
+
+  .admin-sidebar {
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    max-height: none;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+  }
+}
+
+/* Mobile menu toggle button */
+.admin-menu-toggle {
+  display: block;
+  position: fixed;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  z-index: 101;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  border: none;
+  padding: var(--spacing-md);
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.admin-menu-toggle:hover {
+  background: var(--bg-dark-secondary);
+  transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+  .admin-menu-toggle {
+    display: none;
+  }
 }
 
 .admin-logo {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-xl);
   text-align: center;
   background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
   -webkit-background-clip: text;
@@ -40,6 +98,13 @@
   letter-spacing: -0.5px;
   padding-bottom: var(--spacing-lg);
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 768px) {
+  .admin-logo {
+    font-size: 1.75rem;
+    margin-bottom: var(--spacing-2xl);
+  }
 }
 
 .admin-menu {
@@ -51,6 +116,7 @@
 
 .admin-menu-item {
   padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 44px; /* Touch target */
   background: transparent;
   color: rgba(255, 255, 255, 0.8);
   border: none;
@@ -64,6 +130,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  width: 100%;
 }
 
 .admin-menu-item::before {
@@ -105,30 +172,49 @@
 
 .admin-user-box {
   margin-top: auto;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 0, 0, 0.2);
   border-radius: var(--border-radius);
   margin-top: var(--spacing-lg);
 }
 
+@media (min-width: 768px) {
+  .admin-user-box {
+    padding: var(--spacing-lg);
+  }
+}
+
 .admin-user-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-light);
   margin-bottom: var(--spacing-xs);
 }
 
+@media (min-width: 768px) {
+  .admin-user-name {
+    font-size: 0.95rem;
+  }
+}
+
 .admin-user-role {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.7);
   text-transform: capitalize;
+}
+
+@media (min-width: 768px) {
+  .admin-user-role {
+    font-size: 0.8rem;
+  }
 }
 
 .admin-logout-btn {
   width: 100%;
   margin-top: var(--spacing-md);
   padding: var(--spacing-md);
+  min-height: 44px; /* Touch target */
   background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
   border: none;
   border-radius: var(--border-radius-sm);
@@ -150,20 +236,273 @@
 }
 
 /* ---------------------------
-   CONTENIDO PRINCIPAL
+   CONTENIDO PRINCIPAL - Mobile First
    --------------------------- */
 
 .admin-main {
   flex: 1;
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-md);
   overflow-y: auto;
   background: var(--bg-secondary);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-main {
+    padding: var(--spacing-2xl);
+  }
 }
 
 .admin-title {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   color: var(--text-primary);
   letter-spacing: -0.5px;
+}
+
+@media (min-width: 768px) {
+  .admin-title {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+/* Admin section styles */
+.admin-section {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+  .admin-section {
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+  }
+}
+
+.admin-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 768px) {
+  .admin-section-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.admin-section-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .admin-section-header h2 {
+    font-size: 1.5rem;
+  }
+}
+
+.admin-btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: var(--text-light);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 44px; /* Touch target */
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .admin-btn-primary {
+    width: auto;
+  }
+}
+
+.admin-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 44px; /* Touch target */
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .admin-btn-secondary {
+    width: auto;
+  }
+}
+
+.admin-btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.admin-btn-danger {
+  background: var(--danger);
+  color: var(--text-light);
+  border: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  min-height: 44px; /* Touch target */
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .admin-btn-danger {
+    width: auto;
+  }
+}
+
+.admin-btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Admin table styles */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  font-size: 0.875rem;
+  overflow-x: auto;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .admin-table {
+    display: table;
+    font-size: 0.9rem;
+  }
+}
+
+.admin-table thead {
+  display: none;
+  background: var(--bg-secondary);
+}
+
+@media (min-width: 768px) {
+  .admin-table thead {
+    display: table-header-group;
+  }
+}
+
+.admin-table tbody {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .admin-table tbody {
+    display: table-row-group;
+  }
+}
+
+.admin-table tr {
+  display: block;
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  padding: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .admin-table tr {
+    display: table-row;
+    margin-bottom: 0;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+  }
+}
+
+.admin-table th,
+.admin-table td {
+  display: block;
+  text-align: right;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+  .admin-table th,
+  .admin-table td {
+    display: table-cell;
+    text-align: left;
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+}
+
+.admin-table th::before,
+.admin-table td::before {
+  content: attr(data-label);
+  font-weight: 600;
+  float: left;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .admin-table th::before,
+  .admin-table td::before {
+    display: none;
+  }
+}
+
+.admin-table th:last-child,
+.admin-table td:last-child {
+  border-bottom: none;
+}
+
+@media (min-width: 768px) {
+  .admin-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+  }
 }

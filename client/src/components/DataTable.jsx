@@ -137,19 +137,20 @@ const DataTable = ({
                     {sortedData.map((row, index) => (
                         <tr key={row.id || index}>
                             {columns.map((col) => (
-                                <td key={col.key}>
+                                <td key={col.key} data-label={col.label}>
                                     {/* Use custom render function if provided, otherwise display raw value */}
                                     {col.render ? col.render(row[col.key], row) : row[col.key]}
                                 </td>
                             ))}
                             {/* Action buttons column */}
                             {(onEdit || onDelete) && (
-                                <td className="actions-cell">
+                                <td className="actions-cell" data-label="Acciones">
                                     {onEdit && (
                                         <button
                                             className="btn-action btn-edit"
                                             onClick={() => onEdit(row)}
                                             title="Editar"
+                                            aria-label="Editar"
                                         >
                                             ✏️
                                         </button>
@@ -159,6 +160,7 @@ const DataTable = ({
                                             className="btn-action btn-delete"
                                             onClick={() => onDelete(row)}
                                             title="Eliminar"
+                                            aria-label="Eliminar"
                                         >
                                             🗑️
                                         </button>
