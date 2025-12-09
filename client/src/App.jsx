@@ -73,15 +73,27 @@ const App = () => {
 
   return (
     <Routes>
-      {/* Root route - redirects based on auth status */}
+      {/* Root route - always redirect authenticated users to admin dashboard */}
       <Route
         path="/"
         element={
           user ? (
-            // Authenticated users go to admin dashboard
+            // Authenticated users ALWAYS go to admin dashboard
             <Navigate to="/admin/dashboard" replace />
           ) : (
             // Unauthenticated users see public dashboard
+            <Dashboard />
+          )
+        }
+      />
+      
+      {/* Public dashboard route - redirects authenticated users */}
+      <Route
+        path="/dashboard"
+        element={
+          user ? (
+            <Navigate to="/admin/dashboard" replace />
+          ) : (
             <Dashboard />
           )
         }
