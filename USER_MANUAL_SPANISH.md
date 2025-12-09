@@ -16,9 +16,12 @@ VriSA es un **sistema de monitoreo y reporte ambiental** diseñado para ayudar a
 
 ✅ **Monitorear la Calidad del Aire**: Rastrear contaminantes como PM2.5, PM10 y niveles de ozono  
 ✅ **Ver Datos en Tiempo Real**: Ver las condiciones ambientales actuales de múltiples estaciones de monitoreo  
-✅ **Análisis Histórico**: Revisar tendencias y patrones a lo largo del tiempo  
-✅ **Sistema de Alertas**: Recibir notificaciones cuando la calidad del aire alcanza niveles preocupantes  
+✅ **Análisis Histórico**: Revisar tendencias y patrones a lo largo del tiempo con gráficas interactivas  
+✅ **Gráficas Interactivas**: Crear y comparar múltiples gráficas de tendencias históricas  
+✅ **Sistema de Alertas**: Recibir notificaciones cuando la calidad del aire alcanza niveles preocupantes (detección automática)  
 ✅ **Soporte Multi-Organizacional**: Diferentes instituciones pueden gestionar sus propias redes de monitoreo  
+✅ **Apariencia Institucional**: Los colores de la interfaz se adaptan a la marca de su institución  
+✅ **Gestión de Certificados**: Subir y gestionar certificados de calibración y mantenimiento  
 ✅ **Acceso Público**: Los ciudadanos pueden ver datos ambientales sin iniciar sesión  
 
 ### ¿Quién Usa VriSA?
@@ -70,10 +73,15 @@ Use el panel de filtros para:
 - **Elegir una estación específica** o ver todas las estaciones
 - Haga clic en **"Aplicar filtros"** para actualizar la vista
 
-#### 📈 Tendencias Históricas
-Desplácese hacia abajo para ver:
-- Gráficos que muestran cómo ha cambiado la calidad del aire con el tiempo
-- Patrones y tendencias en los datos ambientales
+#### 📈 Gráficas de Tendencias Históricas
+Desplácese hacia abajo para ver la sección "Gráficas de Tendencias Históricas":
+- **Gráficas de líneas interactivas** que muestran cómo ha cambiado la calidad del aire con el tiempo
+- **Múltiples gráficas** se pueden agregar para comparar diferentes estaciones o variables
+- **Botón Agregar Gráfica** para crear nuevas visualizaciones
+- **Selectores de Estación y Variable** para cada gráfica
+- **Líneas de umbral crítico** mostradas como líneas rojas punteadas
+- **Tooltips al pasar el mouse** mostrando valores exactos y marcas de tiempo
+- Patrones y tendencias en los datos ambientales durante los últimos 7 días
 
 ---
 
@@ -109,8 +117,19 @@ Como ciudadano, puede acceder a toda la información pública sin crear una cuen
 - Haga clic en **"Aplicar filtros"** para actualizar la visualización
 
 **Paso 5: Ver Tendencias Históricas**
-- Desplácese hacia abajo hasta la sección "Tendencias históricas"
-- Revise los gráficos para ver cómo ha cambiado la calidad del aire
+- Desplácese hacia abajo hasta la sección "Gráficas de Tendencias Históricas"
+- Verá al menos una gráfica por defecto
+- **Para agregar más gráficas**: Haga clic en el botón **"+ Agregar Gráfica"**
+- **Para configurar una gráfica**:
+  - Seleccione una **Estación** del menú desplegable
+  - Seleccione una **Variable** (por ejemplo, PM2.5, PM10, O3) del menú desplegable
+  - La gráfica se actualizará automáticamente para mostrar los últimos 7 días de datos
+- **Para eliminar una gráfica**: Haga clic en el botón **×** en la esquina superior derecha de la gráfica (solo visible cuando tiene más de una gráfica)
+- **Características de la gráfica**:
+  - Pase el mouse sobre los puntos de datos para ver valores exactos y marcas de tiempo
+  - La línea roja punteada muestra el umbral crítico (si aplica)
+  - El eje X muestra fechas y horas
+  - El eje Y muestra valores de medición con unidades
 - Busque patrones (por ejemplo, peor calidad del aire durante las horas pico)
 
 #### Interpretar las Mediciones
@@ -378,6 +397,20 @@ Los administradores del sistema tienen acceso completo para gestionar todos los 
   - Gestionar Instituciones
   - Gestionar Sensores
   - Ver Alertas
+
+**Paso 4: Ver Gráficas de Tendencias Históricas**
+- Desplácese hacia abajo en el Panel de Control Administrativo para ver la sección "Gráficas de Tendencias Históricas"
+- **Agregar una nueva gráfica**: Haga clic en el botón **"+ Agregar Gráfica"**
+- **Configurar cada gráfica**:
+  - Seleccione una **Estación** del menú desplegable
+  - Seleccione una **Variable** (PM2.5, PM10, O3, etc.) del menú desplegable
+  - La gráfica muestra automáticamente los últimos 7 días de datos
+- **Eliminar una gráfica**: Haga clic en el botón **×** (solo cuando tiene más de una gráfica)
+- **Comparar datos**: Agregue múltiples gráficas para comparar diferentes estaciones o variables lado a lado
+- **Características interactivas**:
+  - Pase el mouse sobre los puntos de datos para ver valores exactos y marcas de tiempo
+  - La línea roja punteada indica el umbral crítico para esa variable
+  - Las gráficas son responsivas y se adaptan al tamaño de su pantalla
 
 #### Gestión Completa del Sistema
 

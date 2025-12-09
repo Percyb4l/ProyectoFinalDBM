@@ -14,11 +14,13 @@
 
 ### Alcance
 El sistema maneja el ciclo de vida completo del monitoreo ambiental:
-- Registro y gestión de estaciones.
-- Configuración de dispositivos sensores.
-- Ingesta y almacenamiento de mediciones.
-- Generación de alertas basadas en umbrales.
-- Gestión de usuarios e instituciones.
+- Registro y gestión de estaciones con técnicos responsables.
+- Configuración de dispositivos sensores y asociación con variables ambientales.
+- Ingesta y almacenamiento de mediciones en tiempo real.
+- Generación automática de alertas basadas en umbrales.
+- Visualización de tendencias históricas mediante gráficas interactivas.
+- Gestión de usuarios e instituciones con apariencia institucional personalizada.
+- Carga y gestión de certificados de calibración y mantenimiento.
 - Generación y distribución de reportes.
 - Flujos de trabajo para solicitudes de integración.
 
@@ -44,6 +46,10 @@ El sistema maneja el ciclo de vida completo del monitoreo ambiental:
 - **React Context API**: Gestión de estado global (autenticación, sesión de usuario).
 - **localStorage**: Persistencia de sesión en el cliente.
 
+#### Visualización de Datos
+- **Recharts 2.15.4**: Librería para gráficas y visualización de datos.
+- **date-fns 4.1.0**: Utilidades para manipulación de fechas.
+
 #### Estilos
 - **CSS3**: CSS personalizado con Variables CSS para temas.
 - **Diseño Responsive Mobile-First**: Breakpoints en 480px, 768px, 1024px.
@@ -68,6 +74,9 @@ El sistema maneja el ciclo de vida completo del monitoreo ambiental:
 
 #### Configuración
 - **dotenv 17.2.3**: Gestión de variables de entorno.
+
+#### Manejo de Archivos
+- **multer 1.4.5-lts.1**: Middleware para manejo de carga de archivos (multipart/form-data).
 
 #### Herramientas de Desarrollo
 - **nodemon 3.0.3**: Servidor de desarrollo con reinicio automático.
@@ -207,9 +216,13 @@ ProyectoFinalDBM-main/
 ├── client/                      # Aplicación Frontend React
 │   ├── src/
 │   │   ├── components/          # Componentes UI reutilizables
-│   │   │   ├── AdminLayout.jsx  # Layout del panel admin
-│   │   │   ├── DataTable.jsx    # Tabla de datos ordenable
-│   │   │   └── Modal.jsx        # Ventanas modales
+│   │   │   ├── ChartManager.jsx      # Gestor de múltiples gráficas
+│   │   │   ├── MeasurementChart.jsx  # Gráfica de tendencias históricas
+│   │   │   ├── DataTable.jsx         # Tabla de datos ordenable
+│   │   │   └── Modal.jsx             # Ventanas modales
+│   │   │
+│   │   ├── hooks/              # Custom React Hooks
+│   │   │   └── useBranding.js  # Hook para branding institucional
 │   │   │
 │   │   ├── context/             # Proveedores de Contexto React
 │   │   │   ├── AuthContext.jsx  # Gestión estado autenticación
@@ -237,7 +250,14 @@ ProyectoFinalDBM-main/
 │   ├── controllers/             # Lógica de negocio
 │   │   ├── authController.js
 │   │   ├── stationController.js
-│   │   └── measurementController.js
+│   │   ├── measurementController.js
+│   │   ├── certificateController.js
+│   │   ├── variableController.js
+│   │   └── thresholdController.js
+│   │
+│   ├── config/                  # Configuración
+│   │   ├── db.js                # Pool PostgreSQL
+│   │   └── multer.js            # Configuración carga archivos
 │   │
 │   ├── middleware/              # Middleware de Express
 │   │   ├── authMiddleware.js    # Auth JWT y Roles (RBAC)
@@ -246,8 +266,10 @@ ProyectoFinalDBM-main/
 │   ├── routes/                  # Definición de rutas API
 │   │
 │   ├── database/                # Scripts SQL
-│   │   ├── schema.sql           # Esquema de la BD
-│   │   └── db_update.sql        # Migraciones
+│   │   ├── schema.sql           # Esquema completo de la BD
+│   │   ├── seed_database.js     # Script de población de datos
+│   │   ├── add_technician_id_to_stations.sql
+│   │   └── add_certificates_table.sql
 │   │
 │   ├── index.js                 # Punto de entrada del servidor
 │   └── package.json             # Dependencias Backend
@@ -259,7 +281,12 @@ ProyectoFinalDBM-main/
 ### Propósitos de Directorios Clave
 
 #### `/client/src/components/`
-Componentes de interfaz de usuario (UI) reutilizables que se pueden usar en múltiples páginas. Incluye componentes de diseño (layout), visualización de datos y componentes de formulario.
+Componentes de interfaz de usuario (UI) reutilizables que se pueden usar en múltiples páginas. Incluye:
+- **ChartManager.jsx**: Gestor de múltiples gráficas de tendencias históricas con capacidad de agregar/eliminar gráficas dinámicamente.
+- **MeasurementChart.jsx**: Componente de gráfica de líneas interactiva para visualizar datos históricos de mediciones ambientales.
+- **DataTable.jsx**: Tabla de datos ordenable y responsive.
+- **Modal.jsx**: Ventanas modales reutilizables.
+- **AdminLayout.jsx**: Layout del panel administrativo con sidebar y navegación.
 
 #### `/client/src/pages/`
 Componentes a nivel de página que representan diferentes rutas en la aplicación. Se dividen en páginas públicas y páginas de administración.
@@ -268,10 +295,19 @@ Componentes a nivel de página que representan diferentes rutas en la aplicació
 Capa de servicio que abstrae la comunicación con la API. Cada archivo de servicio corresponde a una entidad del dominio (estaciones, usuarios, etc.) y proporciona funciones tipadas para las llamadas a la API.
 
 #### `/client/src/context/`
-Proveedores de React Context para la gestión del estado global. Actualmente incluye el contexto de autenticación para la gestión de la sesión del usuario.
+Proveedores de React Context para la gestión del estado global. Incluye:
+- **AuthContext.jsx**: Gestión de autenticación y sesión de usuario con información de institución.
+
+#### `/client/src/hooks/`
+Custom React Hooks para funcionalidades reutilizables:
+- **useBranding.js**: Hook para aplicar colores institucionales dinámicamente a la interfaz.
 
 #### `/server/controllers/`
-Capa de lógica de negocio. Los controladores manejan las solicitudes HTTP, validan la entrada, interactúan con la base de datos y formatean las respuestas. Cada controlador se centra en una entidad de dominio específica.
+Capa de lógica de negocio. Los controladores manejan las solicitudes HTTP, validan la entrada, interactúan con la base de datos y formatean las respuestas. Controladores principales:
+- **measurementController.js**: Incluye detección automática de alertas cuando se exceden umbrales.
+- **certificateController.js**: Gestión de carga, almacenamiento y eliminación de certificados de calibración/mantenimiento.
+- **stationController.js**: Gestión de estaciones con soporte para búsqueda, filtrado y asociación de técnicos.
+- **authController.js**: Autenticación con inclusión de datos de institución en la respuesta.
 
 #### `/server/routes/`
 Definiciones de rutas que asignan endpoints HTTP a funciones del controlador. Las rutas definen el contrato de la API y pueden incluir middleware para autenticación o validación.
@@ -280,10 +316,16 @@ Definiciones de rutas que asignan endpoints HTTP a funciones del controlador. La
 Funciones de middleware de Express que procesan las solicitudes antes de que lleguen a los manejadores de rutas. Incluye autenticación, manejo de errores y análisis de solicitudes (parsing).
 
 #### `/server/config/`
-Módulos de configuración para servicios externos (base de datos, APIs de terceros). Centraliza la lógica de conexión y configuración.
+Módulos de configuración para servicios externos (base de datos, APIs de terceros). Incluye:
+- **db.js**: Pool de conexiones PostgreSQL.
+- **multer.js**: Configuración de multer para carga de archivos (certificados) con validación de tipos MIME.
 
 #### `/server/database/`
-Definiciones de esquemas de base de datos y scripts de migración. Contiene archivos SQL para la inicialización y actualizaciones de la base de datos.
+Definiciones de esquemas de base de datos y scripts de migración. Incluye:
+- **schema.sql**: Esquema completo de la base de datos con todas las tablas y relaciones.
+- **seed_database.js**: Script Node.js para poblar la base de datos con datos de prueba realistas (~1000 mediciones, múltiples estaciones, usuarios, etc.).
+- **add_technician_id_to_stations.sql**: Migración para agregar campo de técnico responsable.
+- **add_certificates_table.sql**: Migración para tabla de certificados.
 
 ---
 
@@ -322,12 +364,14 @@ La base de datos sigue un **modelo relacional** con las siguientes entidades cla
 
 #### `stations`
 - **Propósito**: Ubicaciones físicas de las estaciones de monitoreo.
-- **Campos Clave**: `id`, `name`, `latitude`, `longitude`, `status`, `institution_id`.
+- **Campos Clave**: `id`, `name`, `latitude`, `longitude`, `status`, `institution_id`, `technician_id`.
 - **Relaciones**: 
   - `institution_id` → `institutions.id`.
+  - `technician_id` → `users.id` (opcional, técnico responsable).
   - Uno-a-muchos con `sensors`.
   - Uno-a-muchos con `measurements`.
   - Uno-a-muchos con `alerts`.
+  - Uno-a-muchos con `certificates`.
 
 #### `sensors`
 - **Propósito**: Dispositivos sensores instalados en las estaciones.
@@ -379,6 +423,14 @@ La base de datos sigue un **modelo relacional** con las siguientes entidades cla
 - **Relaciones**: 
   - `institution_id` → `institutions.id` (SET NULL al eliminar).
   - `requested_by` → `users.id` (SET NULL al eliminar).
+
+#### `certificates`
+- **Propósito**: Certificados de calibración y mantenimiento de estaciones y sensores.
+- **Campos Clave**: `id`, `station_id`, `sensor_id` (opcional), `file_url`, `file_name`, `file_size`, `mime_type`, `type` (calibración/mantenimiento), `expiration_date`, `uploaded_by`.
+- **Relaciones**: 
+  - `station_id` → `stations.id` (CASCADE).
+  - `sensor_id` → `sensors.id` (SET NULL al eliminar).
+  - `uploaded_by` → `users.id` (SET NULL al eliminar).
 
 ### Diagrama de Esquema de Base de Datos
 

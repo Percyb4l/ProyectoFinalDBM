@@ -109,8 +109,19 @@ As a citizen, you can access all public information without creating an account.
 - Click **"Aplicar filtros"** to update the display
 
 **Step 5: View Historical Trends**
-- Scroll down to the "Tendencias históricas" (Historical Trends) section
-- Review the charts to see how air quality has changed
+- Scroll down to the "Gráficas de Tendencias Históricas" (Historical Trends Charts) section
+- You'll see at least one chart by default
+- **To add more charts**: Click the **"+ Agregar Gráfica"** (Add Chart) button
+- **To configure a chart**:
+  - Select a **Station** from the dropdown
+  - Select a **Variable** (e.g., PM2.5, PM10, O3) from the dropdown
+  - The chart will automatically update to show the last 7 days of data
+- **To remove a chart**: Click the **×** button in the top-right corner of the chart (only visible when you have more than one chart)
+- **Chart features**:
+  - Hover over data points to see exact values and timestamps
+  - Red dashed line shows the critical threshold (if applicable)
+  - X-axis shows dates and times
+  - Y-axis shows measurement values with units
 - Look for patterns (e.g., worse air quality during rush hour)
 
 #### Interpreting Measurements
@@ -378,6 +389,20 @@ System administrators have full access to manage all aspects of the VriSA platfo
   - Gestionar Instituciones (Manage Institutions)
   - Gestionar Sensores (Manage Sensors)
   - Ver Alertas (View Alerts)
+
+**Step 4: View Historical Trends Charts**
+- Scroll down on the Admin Dashboard to see the "Gráficas de Tendencias Históricas" section
+- **Add a new chart**: Click the **"+ Agregar Gráfica"** (Add Chart) button
+- **Configure each chart**:
+  - Select a **Station** from the dropdown
+  - Select a **Variable** (PM2.5, PM10, O3, etc.) from the dropdown
+  - The chart automatically displays the last 7 days of data
+- **Remove a chart**: Click the **×** button (only when you have more than one chart)
+- **Compare data**: Add multiple charts to compare different stations or variables side by side
+- **Interactive features**:
+  - Hover over data points to see exact values and timestamps
+  - Red dashed line indicates the critical threshold for that variable
+  - Charts are responsive and adapt to your screen size
 
 #### Complete System Management
 
