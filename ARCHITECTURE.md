@@ -211,6 +211,10 @@ sequenceDiagram
 
 ---
 
+## Project Structure
+
+```
+
 ProyectoFinalDBM-main/
 │
 ├── client/                      # Aplicación Frontend React
