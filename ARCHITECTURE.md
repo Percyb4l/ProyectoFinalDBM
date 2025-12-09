@@ -217,9 +217,13 @@ ProyectoFinalDBM-main/
 │   ├── src/
 │   │   ├── components/          # Componentes UI reutilizables
 │   │   │   ├── ChartManager.jsx      # Gestor de múltiples gráficas
+│   │   │   ├── ChartManager.css
 │   │   │   ├── MeasurementChart.jsx  # Gráfica de tendencias históricas
+│   │   │   ├── MeasurementChart.css
 │   │   │   ├── DataTable.jsx         # Tabla de datos ordenable
-│   │   │   └── Modal.jsx             # Ventanas modales
+│   │   │   ├── DataTable.css
+│   │   │   ├── Modal.jsx             # Ventanas modales
+│   │   │   └── Modal.css
 │   │   │
 │   │   ├── hooks/              # Custom React Hooks
 │   │   │   └── useBranding.js  # Hook para branding institucional
@@ -229,23 +233,40 @@ ProyectoFinalDBM-main/
 │   │   │
 │   │   ├── pages/               # Vistas/Páginas (Rutas)
 │   │   │   ├── admin/           # Páginas del panel admin
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── StationsPage.jsx
+│   │   │   │   ├── MeasurementsPage.jsx
+│   │   │   │   ├── AlertsPage.jsx
+│   │   │   │   ├── InstitutionsPage.jsx
+│   │   │   │   ├── SensorsPage.jsx
+│   │   │   │   └── InstitutionRequests.jsx
 │   │   │   ├── Dashboard.jsx    # Dashboard público
 │   │   │   └── Login.jsx        # Página de acceso
 │   │   │
 │   │   ├── services/            # Capa de servicios API
 │   │   │   ├── api.js           # Instancia Axios con interceptores
 │   │   │   ├── stationService.js
-│   │   │   └── userService.js
+│   │   │   ├── userService.js
+│   │   │   ├── certificateService.js
+│   │   │   ├── reportService.js
+│   │   │   ├── requestService.js
+│   │   │   └── settingsService.js
+│   │   │
+│   │   ├── layout/              # Componentes de layout
+│   │   │   ├── AdminLayout.jsx   # Layout del panel administrativo
+│   │   │   └── AdminLayout.css
 │   │   │
 │   │   ├── App.jsx              # Componente principal (Routing)
 │   │   ├── App.css              # Estilos globales
+│   │   ├── index.css            # Estilos base y variables CSS
 │   │   └── main.jsx             # Punto de entrada
 │   │
 │   └── package.json             # Dependencias Frontend
 │
 ├── server/                      # Aplicación Backend Express
-│   ├── config/
-│   │   └── db.js                # Pool de conexión PostgreSQL
+│   ├── config/                  # Configuración
+│   │   ├── db.js                # Pool de conexión PostgreSQL
+│   │   └── multer.js            # Configuración carga archivos
 │   │
 │   ├── controllers/             # Lógica de negocio
 │   │   ├── authController.js
@@ -253,23 +274,40 @@ ProyectoFinalDBM-main/
 │   │   ├── measurementController.js
 │   │   ├── certificateController.js
 │   │   ├── variableController.js
-│   │   └── thresholdController.js
-│   │
-│   ├── config/                  # Configuración
-│   │   ├── db.js                # Pool PostgreSQL
-│   │   └── multer.js            # Configuración carga archivos
+│   │   ├── thresholdController.js
+│   │   ├── alertController.js
+│   │   ├── institutionController.js
+│   │   ├── integrationController.js
+│   │   ├── reportController.js
+│   │   └── sensorController.js
 │   │
 │   ├── middleware/              # Middleware de Express
 │   │   ├── authMiddleware.js    # Auth JWT y Roles (RBAC)
 │   │   └── errorHandler.js      # Manejo global de errores
 │   │
 │   ├── routes/                  # Definición de rutas API
+│   │   ├── authRoutes.js
+│   │   ├── stationRoutes.js
+│   │   ├── measurementRoutes.js
+│   │   ├── certificateRoutes.js
+│   │   ├── variableRoutes.js
+│   │   ├── thresholdRoutes.js
+│   │   ├── alertRoutes.js
+│   │   ├── institutionRoutes.js
+│   │   ├── integrationRoutes.js
+│   │   ├── reportRoutes.js
+│   │   ├── sensorRoutes.js
+│   │   ├── sensorVariableRoutes.js
+│   │   └── maintenanceRoutes.js
 │   │
 │   ├── database/                # Scripts SQL
 │   │   ├── schema.sql           # Esquema completo de la BD
 │   │   ├── seed_database.js     # Script de población de datos
 │   │   ├── add_technician_id_to_stations.sql
 │   │   └── add_certificates_table.sql
+│   │
+│   ├── uploads/                 # Archivos subidos
+│   │   └── certificates/        # Certificados de calibración/mantenimiento
 │   │
 │   ├── index.js                 # Punto de entrada del servidor
 │   └── package.json             # Dependencias Backend
