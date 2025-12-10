@@ -584,19 +584,19 @@ erDiagram
     }
 ```
 
-### Key Database Design Decisions
+### Decisiones Clave de Diseño de Base de Datos
 
-1. **CASCADE Deletes**: Stations, sensors, and measurements use CASCADE deletes to maintain referential integrity and prevent orphaned records.
+1. **Eliminación en CASCADA (CASCADE Deletes)**: Las estaciones, sensores y mediciones utilizan eliminaciones en cascada para mantener la integridad referencial y prevenir registros huérfanos.
 
-2. **SET NULL on Delete**: User and institution references use SET NULL to preserve historical data when users/institutions are removed.
+2. **SET NULL al Eliminar**: Las referencias a usuarios e instituciones utilizan `SET NULL` para preservar los datos históricos cuando se eliminan los usuarios o instituciones asociados.
 
-3. **Composite Keys**: The `sensor_variables` junction table enables many-to-many relationships between sensors and variables.
+3. **Claves Compuestas**: La tabla de unión `sensor_variables` habilita relaciones de muchos a muchos entre sensores y variables.
 
-4. **Timestamp Management**: Automatic timestamp generation using `CURRENT_TIMESTAMP` for audit trails.
+4. **Gestión de Marcas de Tiempo**: Generación automática de marcas de tiempo utilizando `CURRENT_TIMESTAMP` para los registros de auditoría.
 
-5. **CHECK Constraints**: Role and severity fields use CHECK constraints to enforce valid values at the database level.
+5. **Restricciones CHECK**: Los campos de rol y severidad utilizan restricciones `CHECK` para forzar valores válidos a nivel de base de datos.
 
-6. **VARCHAR Primary Keys**: Variables use VARCHAR primary keys (e.g., "PM25") for human-readable identifiers.
+6. **Claves Primarias VARCHAR**: Las variables utilizan claves primarias `VARCHAR` (por ejemplo, "PM25") para identificadores legibles por humanos.
 
 ---
 
