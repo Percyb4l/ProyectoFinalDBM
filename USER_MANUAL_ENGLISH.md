@@ -576,7 +576,7 @@ Follow the same steps outlined in the Institution Administrator section, but rem
 3. **Right-click** on the exact spot where the station is located
 4. Click on the coordinates that appear at the top of the menu
 5. Copy the latitude and longitude values
-   - Example: `4.6097, -74.0817`
+   - Example: `3.4516, -76.5320`
    - First number is latitude, second is longitude
 
 **Method 2: Using a GPS Device**
@@ -589,7 +589,7 @@ Follow the same steps outlined in the Institution Administrator section, but rem
 - Stand at the exact station location when taking the reading
 
 **Important Notes:**
-- Coordinates should be in **decimal format** (e.g., 4.6097, not 4°36'35")
+- Coordinates should be in **decimal format** (e.g., 3.4516, not 3°27'6")
 - Latitude ranges from -90 to +90
 - Longitude ranges from -180 to +180
 - Be as precise as possible for accurate mapping

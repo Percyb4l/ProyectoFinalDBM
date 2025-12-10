@@ -584,7 +584,7 @@ Siga los mismos pasos descritos en la sección de Administrador de Institución,
 3. **Haga clic derecho** en el punto exacto donde está ubicada la estación
 4. Haga clic en las coordenadas que aparecen en la parte superior del menú
 5. Copie los valores de latitud y longitud
-   - Ejemplo: `4.6097, -74.0817`
+   - Ejemplo: `3.4516, -76.5320`
    - El primer número es la latitud, el segundo es la longitud
 
 **Método 2: Usando un Dispositivo GPS**
@@ -597,7 +597,7 @@ Siga los mismos pasos descritos en la sección de Administrador de Institución,
 - Párese en la ubicación exacta de la estación al tomar la lectura
 
 **Notas Importantes:**
-- Las coordenadas deben estar en **formato decimal** (por ejemplo, 4.6097, no 4°36'35")
+- Las coordenadas deben estar en **formato decimal** (por ejemplo, 3.4516, no 3°27'6")
 - La latitud varía de -90 a +90
 - La longitud varía de -180 a +180
 - Sea lo más preciso posible para un mapeo preciso

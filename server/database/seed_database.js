@@ -111,24 +111,24 @@ async function seedDatabase() {
     
     const institutions = [
       {
-        name: "Secretaría Distrital de Ambiente",
-        address: "Carrera 7 # 32-16, Bogotá D.C.",
+        name: "Secretaría de Ambiente de Cali",
+        address: "Calle 5 # 3-14, Santiago de Cali, Valle del Cauca",
         is_verified: true,
         color_primary: "#0066CC",
         color_secondary: "#00A8E8",
         logo_url: null,
       },
       {
-        name: "Universidad Nacional de Colombia",
-        address: "Carrera 30 # 45-03, Bogotá D.C.",
+        name: "Universidad del Valle",
+        address: "Calle 13 # 100-00, Santiago de Cali, Valle del Cauca",
         is_verified: true,
         color_primary: "#8B0000",
         color_secondary: "#DC143C",
         logo_url: null,
       },
       {
-        name: "Corporación Autónoma Regional de Cundinamarca",
-        address: "Calle 26 # 69-76, Bogotá D.C.",
+        name: "Corporación Autónoma Regional del Valle del Cauca (CVC)",
+        address: "Carrera 56 # 11-36, Santiago de Cali, Valle del Cauca",
         is_verified: true,
         color_primary: "#228B22",
         color_secondary: "#32CD32",
@@ -165,14 +165,14 @@ async function seedDatabase() {
       },
       {
         name: "María González",
-        email: "maria.gonzalez@sda.gov.co",
+        email: "maria.gonzalez@cali.gov.co",
         password: hashedPassword,
         role: "admin_institucion",
         institution_id: institutionIds[0],
       },
       {
         name: "Carlos Rodríguez",
-        email: "carlos.rodriguez@unal.edu.co",
+        email: "carlos.rodriguez@univalle.edu.co",
         password: hashedPassword,
         role: "admin_institucion",
         institution_id: institutionIds[1],
@@ -210,40 +210,40 @@ async function seedDatabase() {
     // ============================================
     console.log("🏢 Creando estaciones de monitoreo...");
     
-    // Coordenadas reales de Bogotá
+    // Coordenadas reales de Santiago de Cali, Valle del Cauca
     const stations = [
       {
-        name: "Estación Centro - Plaza de Bolívar",
-        latitude: 4.5981,
-        longitude: -74.0760,
+        name: "Estación Centro - Plaza de Cayzedo",
+        latitude: 3.4516,
+        longitude: -76.5320,
         status: "active",
         institution_id: institutionIds[0],
       },
       {
-        name: "Estación Norte - Universidad Nacional",
-        latitude: 4.6367,
-        longitude: -74.0825,
+        name: "Estación Norte - Universidad del Valle",
+        latitude: 3.3750,
+        longitude: -76.5300,
         status: "active",
         institution_id: institutionIds[1],
       },
       {
-        name: "Estación Sur - Kennedy",
-        latitude: 4.6097,
-        longitude: -74.1500,
+        name: "Estación Sur - Comuna 20",
+        latitude: 3.4000,
+        longitude: -76.5500,
         status: "active",
         institution_id: institutionIds[0],
       },
       {
-        name: "Estación Occidente - Fontibón",
-        latitude: 4.6833,
-        longitude: -74.1333,
+        name: "Estación Occidente - Comuna 18",
+        latitude: 3.4500,
+        longitude: -76.5800,
         status: "active",
         institution_id: institutionIds[2],
       },
       {
-        name: "Estación Oriente - Usaquén",
-        latitude: 4.7000,
-        longitude: -74.0333,
+        name: "Estación Oriente - Comuna 1",
+        latitude: 3.4500,
+        longitude: -76.4800,
         status: "maintenance",
         institution_id: institutionIds[2],
       },
